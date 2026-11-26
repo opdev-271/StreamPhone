@@ -31,6 +31,7 @@
     ['pages', 'Stránky'],
     ['keys', 'Tlačítka'],
     ['night', 'Noc'],
+    ['link', 'Připojení'],
   ];
 
   const images = $derived(assets.filter((a) => a.kind === 'image'));
@@ -234,6 +235,38 @@
   function setPageTheme(page: PageDef, value: string) {
     if (value) page.theme = value;
     else delete page.theme;
+  }
+
+  // ---- connection: USB and Wi-Fi --------------------------------------------
+
+  type PairingInfo = { enabled: boolean; address: string | null; port: number; code: string; seconds: number; url: string | null; qr: string | null };
+  type Paired = { id: string; name: string; created: number };
+  let pairing = $state<PairingInfo | null>(null);
+  let paired = $state<Paired[]>([]);
+
+  async function loadLink(renew = false) {
+    try {
+      pairing = await (await api('/api/pairing', renew ? { method: 'POST' } : undefined)).json();
+      paired = await (await api('/api/devices')).json();
+    } catch {
+      /* the status line already says the agent is unreachable */
+    }
+  }
+
+  // While the tab is open, keep the code and the list fresh: a phone that has
+  // just paired shows up, and a used or expired code is replaced.
+  $effect(() => {
+    if (tab !== 'link') return;
+    void cfg?.wireless;
+    loadLink();
+    const timer = setInterval(loadLink, 3000);
+    return () => clearInterval(timer);
+  });
+
+  async function forget(device: Paired) {
+    if (!confirm(`Zrušit spárování s „${device.name}“? Telefon se odpojí a bude se muset spárovat znovu.`)) return;
+    await api(`/api/devices/${device.id}`, { method: 'DELETE' });
+    loadLink();
   }
 
   // ---- layout ------------------------------------------------------------
@@ -1158,6 +1191,57 @@
           {:else}
             <p class="hint">V nastavení není žádný panel tlačítek.</p>
           {/if}
+        {:else if tab === 'link'}
+          <h2>Připojení</h2>
+          <h3>Kabelem</h3>
+          <p class="hint first">
+            Zapni na telefonu <code>Možnosti pro vývojáře → Ladění USB</code> a připoj ho. Dashboard se otevře sám, párovat není třeba.
+          </p>
+
+          <h3>Přes Wi-Fi</h3>
+          <label class="row">
+            <span>Povolit Wi-Fi</span>
+            <input type="checkbox" checked={cfg.wireless === true} onchange={(e) => (cfg!.wireless = on(e))} />
+          </label>
+          {#if cfg.wireless}
+            {#if pairing?.address && pairing.qr}
+              <div class="qr">{@html pairing.qr}</div>
+              <p class="hint center">
+                Naskenuj fotoaparátem telefonu. Telefon musí být ve stejné síti jako počítač.
+              </p>
+              <label class="row">
+                <span>Adresa</span>
+                <input class="wide code" style="margin-left:0" type="text" readonly value={pairing.url ?? ''} />
+              </label>
+              <div class="actions">
+                <button class="btn" onclick={() => loadLink(true)}>Nový kód</button>
+                <span class="state" style="align-self:center;margin-left:12px">platí ještě {Math.ceil(pairing.seconds / 60)} min, na jedno použití</span>
+              </div>
+            {:else if pairing && !pairing.address}
+              <p class="problem" style="margin:12px 0 0">
+                Počítač není v místní síti (nemá soukromou adresu), takže se k němu telefon přes Wi-Fi nedostane.
+              </p>
+            {:else}
+              <p class="hint">Připravuji kód…</p>
+            {/if}
+
+            <h3>Spárované telefony</h3>
+            {#each paired as device (device.id)}
+              <div class="row">
+                <span style="flex:1">{device.name}</span>
+                <output style="flex:none">{new Date(device.created).toLocaleDateString('cs')}</output>
+                <button class="x" title="Zrušit spárování" onclick={() => forget(device)}>×</button>
+              </div>
+            {:else}
+              <p class="hint first">Zatím žádný.</p>
+            {/each}
+
+            <p class="hint">
+              Windows se při prvním zapnutí zeptá, jestli má StreamPhone povolit v síti: povol ho pro <strong>soukromé</strong> sítě.
+              Bez spárování se k tlačítkům nikdo ze sítě nedostane. Spojení ale není šifrované, takže Wi-Fi používej jen v síti,
+              které věříš (doma), ne na veřejné.
+            </p>
+          {/if}
         {:else if tab === 'night'}
           <h2>Noční režim</h2>
           <label class="row">
@@ -1472,6 +1556,19 @@
   }
   fieldset h3:first-child {
     margin-top: 10px;
+  }
+
+  .qr {
+    width: 220px;
+    margin: 14px auto 0;
+    padding: 12px;
+    border-radius: 16px;
+    background: #fff;
+    line-height: 0;
+  }
+  .qr :global(svg) {
+    width: 100%;
+    height: auto;
   }
 
   /* Theme tiles */

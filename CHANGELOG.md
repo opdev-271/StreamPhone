@@ -2,6 +2,13 @@
 
 Verze se řídí [sémantickým verzováním](https://semver.org/lang/cs/). Každá verze má na GitHubu tag `vX.Y.Z` a vydání se sestaveným agentem pro Windows.
 
+## 1.1.0 – 2026-11-26
+
+- **Wi-Fi**: telefon se připojí i bez kabelu. Páruje se QR kódem z editoru (záložka Připojení); spárované telefony jdou odebrat.
+- **macOS**: agent umí spouštění, klávesové zkratky, přehrávač (Spotify, Hudba), hlasitost, zamknutí a vypnutí displeje. Na skutečném Macu zatím neověřeno.
+- Displej telefonu zůstává zapnutý i přes Wi-Fi, kde to prohlížeč běžnou cestou nedovolí.
+- Šifrované spojení pro Discord jde při sestavení vynechat (`--no-default-features`).
+
 ## 1.0.1 – 2026-11-26
 
 - Projekt má licenci MIT.

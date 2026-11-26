@@ -21,10 +21,12 @@ pub const PROCESSES: &str = "system.processes";
 const MAX_TODOS: usize = 100;
 const MAX_TODO_LEN: usize = 200;
 
-/// Killing these takes Windows (or the agent) down with them.
+/// Killing these takes the system (or the agent) down with them.
 const PROTECTED: &[&str] = &[
     "system", "registry", "idle", "smss.exe", "csrss.exe", "wininit.exe", "winlogon.exe", "services.exe", "lsass.exe",
     "svchost.exe", "dwm.exe", "fontdrvhost.exe", "memory compression", "secure system", "system idle process",
+    // macOS
+    "kernel_task", "launchd", "windowserver", "loginwindow",
 ];
 
 pub struct Tools {

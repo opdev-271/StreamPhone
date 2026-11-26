@@ -70,6 +70,7 @@ fn api() -> String {
     std::env::var("STREAMPHONE_DISCORD_API").unwrap_or_else(|_| "https://discord.com/api".to_owned())
 }
 
+#[cfg(feature = "https")]
 fn agent() -> ureq::Agent {
     ureq::AgentBuilder::new().timeout(Duration::from_secs(8)).user_agent("StreamPhone").build()
 }
@@ -139,6 +140,13 @@ enum Fetched {
     Keep,
 }
 
+#[cfg(not(feature = "https"))]
+fn fetch(_id: &str) -> Fetched {
+    let _ = (api, Fetched::Ok, Fetched::Keep);
+    Fetched::Problem("offline")
+}
+
+#[cfg(feature = "https")]
 fn fetch(id: &str) -> Fetched {
     match agent().get(&format!("{}/guilds/{id}/widget.json", api())).call() {
         Ok(res) => res.into_json().map_or(Fetched::Keep, Fetched::Ok),
@@ -147,6 +155,24 @@ fn fetch(id: &str) -> Fetched {
         Err(ureq::Error::Status(_, _)) => Fetched::Keep,
         Err(ureq::Error::Transport(_)) => Fetched::Problem("offline"),
     }
+}
+
+#[cfg(feature = "https")]
+fn download(url: &str) -> Option<Picture> {
+    use std::io::Read;
+    let res = agent().get(url).call().ok()?;
+    let kind = res.content_type().to_owned();
+    if !kind.starts_with("image/") {
+        return None;
+    }
+    let mut bytes = Vec::new();
+    res.into_reader().take(2 * 1024 * 1024).read_to_end(&mut bytes).ok()?;
+    Some((kind, bytes))
+}
+
+#[cfg(not(feature = "https"))]
+fn download(_url: &str) -> Option<Picture> {
+    None
 }
 
 impl Discord {
@@ -161,19 +187,7 @@ impl Discord {
             }
             url.clone()
         };
-        let fetched = spawn_blocking(move || {
-            let res = agent().get(&url).call().ok()?;
-            let kind = res.content_type().to_owned();
-            if !kind.starts_with("image/") {
-                return None;
-            }
-            let mut bytes = Vec::new();
-            use std::io::Read;
-            res.into_reader().take(2 * 1024 * 1024).read_to_end(&mut bytes).ok()?;
-            Some((kind, bytes))
-        })
-        .await
-        .ok()??;
+        let fetched = spawn_blocking(move || download(&url)).await.ok()??;
         if let Some(entry) = self.avatars.lock().unwrap().get_mut(key) {
             entry.1 = Some(fetched.clone());
         }

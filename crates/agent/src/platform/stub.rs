@@ -1,4 +1,4 @@
-//! Placeholder for platforms that are not ported yet (macOS, Linux).
+//! Placeholder for platforms that are not ported yet (Linux).
 
 use anyhow::{bail, Result};
 

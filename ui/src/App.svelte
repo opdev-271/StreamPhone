@@ -3,6 +3,7 @@
   import Page from './lib/Page.svelte';
   import Offline from './lib/Offline.svelte';
   import Backdrop from './lib/Backdrop.svelte';
+  import { keepAwake } from './lib/awake';
   import { loadFont, resolveTheme, themeVars } from './lib/theme';
 
   let pager = $state<HTMLDivElement>();
@@ -108,27 +109,7 @@
   }
 
   // Keep the phone's screen on while the dashboard is visible.
-  $effect(() => {
-    let lock: any = null;
-    let dead = false;
-    const acquire = async () => {
-      try {
-        if (document.visibilityState === 'visible') {
-          lock = await (navigator as any).wakeLock?.request('screen');
-          if (dead) lock?.release();
-        }
-      } catch {
-        /* not supported or denied */
-      }
-    };
-    acquire();
-    document.addEventListener('visibilitychange', acquire);
-    return () => {
-      dead = true;
-      document.removeEventListener('visibilitychange', acquire);
-      lock?.release?.();
-    };
-  });
+  $effect(() => keepAwake());
 </script>
 
 <svelte:window onkeydown={onKey} onmessage={onMessage} />

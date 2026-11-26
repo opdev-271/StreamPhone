@@ -1,6 +1,6 @@
 # StreamPhone
 
-Starý Android telefon jako dotykový panel k počítači. Telefon se připojuje USB kabelem, bez Wi-Fi a bez instalace aplikace: stačí zapnout ladění USB.
+Starý Android telefon jako dotykový panel k počítači. Připojuje se USB kabelem nebo přes Wi-Fi a na telefon se nic neinstaluje: dashboard běží v prohlížeči.
 
 ![Stránka s tlačítky](docs/stream-page.png)
 
@@ -16,15 +16,21 @@ Co umí:
 
 ![Relace Claude Code se žádostí o povolení](docs/ai-page.png)
 
-Podporované systémy: Windows 10 64bit a novější, Android 8 a novější. macOS a Linux později (agent má pro ně připravenou vrstvu `platform`, zatím jen zástupnou).
+| Počítač | Telefon | Kabelem | Přes Wi-Fi |
+|---|---|---|---|
+| Windows 10 64bit a novější | Android 8 a novější | ano | ano |
+| macOS | Android 8 a novější | ano | ano |
 
-Stav: raná verze. Vyvíjeno a zkoušeno na Windows 11 s emulátorem Androidu; na skutečném telefonu s Androidem 8 zatím neověřeno. Napojení na Claude Code, Codex, LM Studio, Ollamu a Discord je ověřené proti simulovaným datům.
+Linux později (agent má pro něj vrstvu `platform`, zatím jen zástupnou).
+
+Stav: raná verze. Vyvíjeno a zkoušeno na Windows 11 s emulátorem Androidu; na skutečném telefonu s Androidem 8 zatím neověřeno. **Podpora macOS je napsaná a přeložená, ale na skutečném Macu nikdy neběžela.** Napojení na Claude Code, Codex, LM Studio, Ollamu a Discord je ověřené proti simulovaným datům.
 
 ## Jak to funguje
 
 - `crates/agent` – agent na PC (Rust). Servíruje UI, posílá data přes WebSocket a vykonává akce. Poslouchá jen na `127.0.0.1`.
 - `ui` – rozhraní telefonu (Svelte 5 + TypeScript). Při sestavení se vloží do agenta.
-- Agent sám najde `adb`, a když připojíš telefon, přesměruje mu svůj port (`adb reverse`) a otevře na něm dashboard.
+- Kabelem: agent sám najde `adb`, a když připojíš telefon, přesměruje mu svůj port (`adb reverse`) a otevře na něm dashboard.
+- Přes Wi-Fi: agent nabídne dashboard na adrese počítače v místní síti, jen spárovaným telefonům.
 
 ## Spuštění
 
@@ -38,6 +44,43 @@ cargo run
 Dashboard je pak na `http://localhost:47800/` (na PC i na telefonu připojeném kabelem) a editor vzhledu na `http://localhost:47801/` (jen na PC).
 
 Na telefonu zapni **Možnosti pro vývojáře → Ladění USB** a po připojení potvrď dotaz „Povolit ladění USB“. V Chromu pak přes nabídku **Přidat na plochu** získáš celoobrazovkovou aplikaci.
+
+## Připojení přes Wi-Fi
+
+Ve výchozím stavu agent poslouchá jen na `127.0.0.1` a telefon se k němu dostane pouze kabelem. Wi-Fi se zapíná v editoru v záložce **Připojení** (nebo `"wireless": true` v nastavení):
+
+1. Zapni **Povolit Wi-Fi**. Editor ukáže QR kód.
+2. Naskenuj ho fotoaparátem telefonu, který je ve stejné síti. Dashboard se otevře a telefon se spáruje.
+3. Přes nabídku prohlížeče **Přidat na plochu** si z něj udělej celoobrazovkovou aplikaci.
+
+Jak je to zabezpečené:
+
+- **Párování**: QR kód nese jednorázový kód (platí 10 minut, po osmi špatných pokusech se zahodí). Telefon ho vymění za vlastní tajemství a to už se po síti neposílá: při každém připojení jím telefon jen podepíše náhodnou výzvu.
+- **Bez spárování nic**: nespárované zařízení v síti nedostane nastavení ani data a nemůže mačkat tlačítka.
+- **Zrušení**: v záložce Připojení jde telefon odebrat, odpojí se do několika vteřin. Stejně rychle zabere vypnutí Wi-Fi.
+- **Jen místní síť**: agent poslouchá pouze na soukromé adrese počítače (192.168.x.x, 10.x.x.x, 172.16–31.x.x), nikdy na veřejné. Editor a příjem událostí z AI nástrojů zůstávají dostupné jen z počítače samotného.
+- **Co telefon nesmí**: stejně jako po kabelu může tlačítka jen mačkat. Co tlačítko spustí, jde změnit pouze z PC.
+- **Spojení není šifrované.** Ochrání před ostatními zařízeními v domácí síti, ne před někým, kdo dokáže provoz v síti odposlouchávat nebo měnit. Používej ho v síti, které věříš, ne na veřejné Wi-Fi. Obrázky tapet a obalů alb jsou dostupné i bez spárování.
+
+Windows se při prvním zapnutí zeptá, jestli má StreamPhone povolit v síti: povol ho pro **soukromé** sítě. Spárované telefony jsou v `devices.json` vedle nastavení.
+
+Přes Wi-Fi prohlížeč nedovolí stránce držet displej zapnutý běžnou cestou. Dashboard to obchází přehráváním nepatrného tichého videa, které se spustí po prvním dotyku. Kdyby displej přesto zhasínal, zapni na telefonu `Možnosti pro vývojáře → Nevypínat obrazovku` při nabíjení.
+
+## macOS
+
+Agent se na Macu sestaví ze zdrojů (`cd ui; npm install; npm run build; cd ..; cargo build --release`). Hotový program pro Mac zatím ve vydáních není.
+
+| Funkce | Jak je udělaná | Poznámka |
+|---|---|---|
+| Spouštění | `open` | název aplikace (`"Safari"`), cesta nebo odkaz |
+| Klávesové zkratky | AppleScript | `ctrl`, `shift`, `alt` (Option), `win` nebo `cmd` (Command) |
+| Přehrávač | AppleScript | Spotify nebo Hudba; bez obalu alba |
+| Hlasitost, ztlumení | AppleScript | výstupy bez softwarové hlasitosti (HDMI) nejdou |
+| Zamknutí | zkratka Ctrl-Cmd-Q | |
+| Vypnutí displeje | `pmset displaysleepnow` | |
+| Počítač, procesy, časovač, úkoly, AI, Discord, Wi-Fi | společný kód | |
+
+macOS si při prvním použití vyžádá oprávnění: **Automatizace** pro ovládání Spotify a Hudby a **Zpřístupnění** pro klávesové zkratky a zamknutí (`Nastavení systému → Soukromí a zabezpečení`). Nastavení je v `~/Library/Application Support/StreamPhone/config.json`. Cesty ve výchozích tlačítkách jsou pro Windows, na Macu si je uprav v editoru.
 
 ## Nastavení
 
@@ -297,6 +340,8 @@ cargo test
 ```
 
 Agent do sebe vkládá sestavené UI ze složky `ui/dist`, takže před prvním `cargo build` musí proběhnout `npm run build`.
+
+Šifrované spojení pro Discord potřebuje kompilátor C. Kde není, sestav agenta bez něj (`cargo build --no-default-features`); widget Discord pak hlásí, že Discord není dostupný.
 
 ## Licence
 

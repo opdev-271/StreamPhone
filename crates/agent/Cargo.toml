@@ -1,9 +1,16 @@
 [package]
 name = "streamphone-agent"
-version = "1.0.1"
+version = "1.1.0"
 license = "MIT"
 edition = "2021"
 description = "StreamPhone desktop agent: serves the phone UI and executes actions on the PC"
+
+[features]
+default = ["https"]
+# HTTPS for Discord's widget API. Its crypto library needs a C compiler for
+# the target, so it can be left out (`--no-default-features`) where there is
+# none; the Discord widget then reports Discord as unreachable.
+https = ["dep:ureq"]
 
 [dependencies]
 anyhow = "1"
@@ -16,7 +23,12 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 sysinfo = "0.33"
 # HTTPS, for Discord's public widget API.
-ureq = { version = "2", features = ["json"] }
+ureq = { version = "2", features = ["json"], optional = true }
+# Pairing phones over Wi-Fi: one-time codes, device secrets, the QR code.
+getrandom = "0.2"
+hmac = "0.12"
+sha2 = "0.10"
+qrcode = { version = "0.14", default-features = false, features = ["svg"] }
 tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync", "time", "process", "net", "signal", "fs"] }
 tracing = "0.1"
 tracing-subscriber = "0.3"

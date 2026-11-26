@@ -1,10 +1,11 @@
 //! HTTP + WebSocket server. Serves the phone UI and speaks the protocol.
 
 use std::collections::HashSet;
+use std::net::SocketAddr;
 use std::sync::Arc;
 
 use axum::extract::ws::{Message, WebSocket, WebSocketUpgrade};
-use axum::extract::{Path, State};
+use axum::extract::{ConnectInfo, Path, State};
 use axum::http::{header, HeaderMap, StatusCode, Uri};
 use axum::response::{IntoResponse, Response};
 use axum::routing::get;
@@ -54,17 +55,37 @@ pub fn is_trusted(headers: &HeaderMap) -> bool {
     }
 }
 
-async fn ws_upgrade(State(app): State<Arc<App>>, headers: HeaderMap, ws: WebSocketUpgrade) -> Response {
-    if !is_trusted(&headers) {
+async fn ws_upgrade(
+    State(app): State<Arc<App>>,
+    ConnectInfo(peer): ConnectInfo<SocketAddr>,
+    headers: HeaderMap,
+    ws: WebSocketUpgrade,
+) -> Response {
+    // From this machine (the PC's browser, or a phone on the USB port forward)
+    // the page's origin decides. From the network, pairing does.
+    let remote = !peer.ip().is_loopback();
+    let allowed = if remote { app.config.read().unwrap().wireless() } else { is_trusted(&headers) };
+    if !allowed {
         return StatusCode::FORBIDDEN.into_response();
     }
-    ws.on_upgrade(move |socket| client(socket, app))
+    ws.on_upgrade(move |socket| client(socket, app, remote))
 }
 
-async fn client(socket: WebSocket, app: Arc<App>) {
+async fn client(socket: WebSocket, app: Arc<App>, remote: bool) {
     let (mut tx, mut rx) = socket.split();
     let mut bus = app.hub.listen();
     let mut topics: HashSet<String> = HashSet::new();
+
+    // A phone on Wi-Fi has to prove it is paired before it gets anything.
+    let device = if remote {
+        match crate::pairing::admit(&app, &mut tx, &mut rx).await {
+            Some(device) => Some(device),
+            None => return,
+        }
+    } else {
+        None
+    };
+    let mut recheck = tokio::time::interval(std::time::Duration::from_secs(3));
 
     let welcome = {
         let config = app.config.read().unwrap();
@@ -77,6 +98,14 @@ async fn client(socket: WebSocket, app: Arc<App>) {
 
     loop {
         tokio::select! {
+            // Unpairing a phone or switching Wi-Fi off cuts it loose at once.
+            _ = recheck.tick() => {
+                if let Some(device) = &device {
+                    if !app.config.read().unwrap().wireless() || !app.pairing.knows(device) {
+                        break;
+                    }
+                }
+            }
             incoming = rx.next() => {
                 let text = match incoming {
                     Some(Ok(Message::Text(text))) => text,
@@ -198,9 +227,16 @@ pub fn asset_kind(path: &str) -> Option<&'static str> {
 }
 
 /// Wallpapers, button images and fonts from the user's assets folder.
-pub async fn user_file(State(app): State<Arc<App>>, headers: HeaderMap, Path(path): Path<String>) -> Response {
+pub async fn user_file(
+    State(app): State<Arc<App>>,
+    ConnectInfo(peer): ConnectInfo<SocketAddr>,
+    headers: HeaderMap,
+    Path(path): Path<String>,
+) -> Response {
+    // The host check guards requests from this machine against DNS rebinding;
+    // a phone on Wi-Fi legitimately addresses the PC by its IP.
     let host = headers.get(header::HOST).and_then(|v| v.to_str().ok());
-    if !host.is_some_and(is_local_host) {
+    if peer.ip().is_loopback() && !host.is_some_and(is_local_host) {
         return StatusCode::FORBIDDEN.into_response();
     }
     let Some(rel) = safe_relative(&path) else {

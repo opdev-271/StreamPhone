@@ -28,6 +28,9 @@ pub fn router(app: Arc<App>) -> Router {
         .route("/api/hook", post(hook))
         .route("/api/event", post(event))
         .route("/api/info", get(info))
+        .route("/api/pairing", get(pairing_info).post(pairing_renew))
+        .route("/api/devices", get(devices))
+        .route("/api/devices/{id}", axum::routing::delete(forget_device))
         .route("/api/assets", get(list_assets))
         .route("/api/assets/{*path}", put(upload_asset).delete(delete_asset))
         .route("/user/{*path}", get(server::user_file))
@@ -101,6 +104,31 @@ async fn event(State(app): State<Arc<App>>, Json(body): Json<Value>) -> Response
 async fn info() -> Response {
     let exe = std::env::current_exe().map(|p| p.to_string_lossy().into_owned()).unwrap_or_default();
     Json(json!({ "version": env!("CARGO_PKG_VERSION"), "exe": exe })).into_response()
+}
+
+/// What the phone needs to pair over Wi-Fi: the address and a one-time code,
+/// also as a QR code. Served on the PC-only port, so the code is only ever
+/// shown on the PC's own screen.
+async fn pairing_info(State(app): State<Arc<App>>) -> Response {
+    let enabled = app.config.read().unwrap().wireless();
+    let address = crate::pairing::lan_ip();
+    let (code, seconds) = app.pairing.code();
+    let url = address.map(|ip| format!("http://{ip}:{}/#pair={code}", app.port));
+    let qr = url.as_deref().filter(|_| enabled).and_then(crate::pairing::qr_svg);
+    Json(json!({ "enabled": enabled, "address": address, "port": app.port, "code": code, "seconds": seconds, "url": url, "qr": qr })).into_response()
+}
+
+async fn pairing_renew(State(app): State<Arc<App>>) -> Response {
+    app.pairing.renew_code();
+    pairing_info(State(app)).await
+}
+
+async fn devices(State(app): State<Arc<App>>) -> Response {
+    Json(app.pairing.list()).into_response()
+}
+
+async fn forget_device(State(app): State<Arc<App>>, Path(id): Path<String>) -> Response {
+    if app.pairing.remove(&id) { StatusCode::NO_CONTENT.into_response() } else { StatusCode::NOT_FOUND.into_response() }
 }
 
 /// Files in the assets folder, one level of subfolders deep.

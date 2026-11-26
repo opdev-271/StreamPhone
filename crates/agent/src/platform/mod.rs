@@ -1,16 +1,22 @@
 //! Everything OS-specific lives behind this module. Each platform exposes the
 //! same free functions; all of them block and are called via `spawn_blocking`.
 //!
-//! Windows is implemented, macOS and Linux get the stub until they are ported.
+//! Windows and macOS are implemented; Linux gets the stub until it is ported.
 
 #[cfg(windows)]
 mod windows;
 #[cfg(windows)]
 pub use self::windows::*;
 
-#[cfg(not(windows))]
+// Also built for tests elsewhere: its text handling is checked on every platform.
+#[cfg(any(target_os = "macos", test))]
+mod macos;
+#[cfg(target_os = "macos")]
+pub use self::macos::*;
+
+#[cfg(not(any(windows, target_os = "macos")))]
 mod stub;
-#[cfg(not(windows))]
+#[cfg(not(any(windows, target_os = "macos")))]
 pub use self::stub::*;
 
 /// Media transport commands.
@@ -22,6 +28,7 @@ pub enum MediaCmd {
 }
 
 /// Expands `%NAME%` environment references in a launch target.
+#[cfg_attr(not(windows), allow(dead_code))]
 pub fn expand_env(input: &str) -> String {
     let mut out = String::new();
     let mut rest = input;

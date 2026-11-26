@@ -8,6 +8,7 @@ mod editor;
 mod http;
 mod hub;
 mod models;
+mod pairing;
 mod platform;
 mod protocol;
 mod providers;
@@ -40,6 +41,8 @@ pub struct App {
     pub ai: ai::Ai,
     /// Who is online on the watched Discord servers.
     pub discord: discord::Discord,
+    /// Phones paired for Wi-Fi.
+    pub pairing: pairing::Pairing,
 }
 
 impl App {
@@ -71,6 +74,42 @@ fn parse_args() -> Result<Args> {
     Ok(args)
 }
 
+/// Offers the dashboard on the local network while Wi-Fi is switched on in
+/// the config. It listens on the PC's private address only, never on every
+/// interface, and follows the address when the network changes.
+async fn wifi(app: Arc<App>) {
+    let mut serving: Option<(Ipv4Addr, tokio::task::JoinHandle<()>)> = None;
+    let mut complained = false;
+    loop {
+        tokio::time::sleep(std::time::Duration::from_secs(2)).await;
+        let wanted = if app.config.read().unwrap().wireless() { pairing::lan_ip() } else { None };
+        if serving.as_ref().map(|s| s.0) == wanted {
+            continue;
+        }
+        if let Some((ip, task)) = serving.take() {
+            task.abort();
+            tracing::info!("Wi-Fi: no longer listening on {ip}");
+        }
+        let Some(ip) = wanted else { continue };
+        match tokio::net::TcpListener::bind(SocketAddr::from((ip, app.port))).await {
+            Ok(listener) => {
+                tracing::info!("Wi-Fi: http://{ip}:{}/ (paired phones only)", app.port);
+                complained = false;
+                let router = server::router(app.clone());
+                let task = tokio::spawn(async move {
+                    let _ = axum::serve(listener, router.into_make_service_with_connect_info::<SocketAddr>()).await;
+                });
+                serving = Some((ip, task));
+            }
+            Err(err) if !complained => {
+                complained = true;
+                tracing::warn!("Wi-Fi: cannot listen on {ip}: {err}");
+            }
+            Err(_) => {}
+        }
+    }
+}
+
 #[tokio::main]
 async fn main() -> Result<()> {
     // `hook` and `report` are one-shot messengers to an agent that is already running.
@@ -95,6 +134,7 @@ async fn main() -> Result<()> {
         kick: Notify::new(),
         ai: ai::Ai::default(),
         discord: discord::Discord::default(),
+        pairing: pairing::Pairing::new(args.config.parent().unwrap_or(std::path::Path::new("."))),
         tools: tools::Tools::new(args.config.parent().unwrap_or(std::path::Path::new("."))),
     });
 
@@ -124,7 +164,7 @@ async fn main() -> Result<()> {
             tracing::info!("editor: http://localhost:{editor_port}/");
             let router = editor::router(app.clone());
             tokio::spawn(async move {
-                if let Err(err) = axum::serve(editor_listener, router).await {
+                if let Err(err) = axum::serve(editor_listener, router.into_make_service_with_connect_info::<SocketAddr>()).await {
                     tracing::warn!("editor stopped: {err}");
                 }
             });
@@ -136,11 +176,13 @@ async fn main() -> Result<()> {
     if let Ok(v6) = tokio::net::TcpListener::bind(SocketAddr::from((Ipv6Addr::LOCALHOST, editor_port))).await {
         let router = editor::router(app.clone());
         tokio::spawn(async move {
-            let _ = axum::serve(v6, router).await;
+            let _ = axum::serve(v6, router.into_make_service_with_connect_info::<SocketAddr>()).await;
         });
     }
 
-    axum::serve(listener, server::router(app))
+    tokio::spawn(wifi(app.clone()));
+
+    axum::serve(listener, server::router(app).into_make_service_with_connect_info::<SocketAddr>())
         .with_graceful_shutdown(async {
             let _ = tokio::signal::ctrl_c().await;
         })

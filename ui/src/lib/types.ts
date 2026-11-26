@@ -78,6 +78,8 @@ export interface Config {
   /** Page indicator at the bottom edge. */
   dots?: boolean;
   night?: NightMode;
+  /** Phones may connect over Wi-Fi after pairing. */
+  wireless?: boolean;
 }
 
 /** Dims the dashboard at night, e.g. for a phone on the bedside table. */

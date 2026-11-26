@@ -162,6 +162,11 @@ impl Config {
         ids
     }
 
+    /// Whether phones may connect over Wi-Fi (after pairing).
+    pub fn wireless(&self) -> bool {
+        self.extra.get("wireless").and_then(Value::as_bool) == Some(true)
+    }
+
     /// The action behind a deck button. Launch targets and key combos only ever
     /// come from here, never from the phone.
     pub fn button_action(&self, widget_id: &str, button: usize) -> Option<Action> {

@@ -1,13 +1,54 @@
+import { hmacSha256Hex } from './hmac';
 import type { Action, Config } from './types';
 
 type Result = { ok: boolean; error?: string };
 
+/** What a paired phone remembers about this PC. */
+type Pairing = { device: string; secret: string };
+
+const STORE = 'streamphone.pairing';
+
+function readPairing(): Pairing | null {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORE) ?? 'null');
+    return saved?.device && saved?.secret ? saved : null;
+  } catch {
+    return null;
+  }
+}
+
+function writePairing(pairing: Pairing | null) {
+  try {
+    if (pairing) localStorage.setItem(STORE, JSON.stringify(pairing));
+    else localStorage.removeItem(STORE);
+  } catch {
+    /* private mode: the phone will have to pair again next time */
+  }
+}
+
+/** The one-time code from the QR link (`…/#pair=CODE`). */
+function pairCode(): string | null {
+  return /[#&]pair=([A-Za-z0-9]+)/.exec(location.hash)?.[1] ?? null;
+}
+
+/** A name for the list of paired phones on the PC, e.g. "Pixel 4a". */
+function deviceName(): string {
+  const model = /Android [\d.]+; ([^;)]+?)(?: Build|\))/.exec(navigator.userAgent)?.[1];
+  if (model && model !== 'K') return model.trim();
+  if (/iPhone|iPad/.test(navigator.userAgent)) return /iPad/.test(navigator.userAgent) ? 'iPad' : 'iPhone';
+  return /Android/.test(navigator.userAgent) ? 'Telefon s Androidem' : 'Prohlížeč';
+}
+
 /**
  * One WebSocket to the agent. Widgets subscribe to topics (ref-counted), the
  * agent only computes topics somebody is subscribed to.
+ *
+ * Over USB (and on the PC itself) the agent welcomes the page right away.
+ * Over Wi-Fi it first asks for proof of pairing.
  */
 class Connection {
-  status = $state<'connecting' | 'online' | 'offline'>('connecting');
+  /** `unpaired`: reached the PC over Wi-Fi, but this phone is not paired. */
+  status = $state<'connecting' | 'online' | 'offline' | 'unpaired'>('connecting');
   config = $state<Config | null>(null);
   data = $state<Record<string, any>>({});
 
@@ -18,6 +59,7 @@ class Connection {
   private nextId = 1;
   private retryMs = 500;
   private started = false;
+  private welcomed = false;
 
   connect() {
     if (this.started) return;
@@ -29,12 +71,11 @@ class Connection {
     const proto = location.protocol === 'https:' ? 'wss' : 'ws';
     const ws = new WebSocket(`${proto}://${location.host}/ws`);
     this.ws = ws;
+    this.welcomed = false;
+    let refused = false;
 
     ws.onopen = () => {
-      this.status = 'online';
       this.retryMs = 500;
-      const topics = [...this.refs.keys()];
-      if (topics.length) this.send({ t: 'sub', topics });
     };
 
     ws.onmessage = (ev) => {
@@ -45,7 +86,38 @@ class Connection {
         return;
       }
       switch (msg.t) {
-        case 'welcome':
+        case 'hello': {
+          // Wi-Fi: prove the pairing, or pair now with the code from the QR.
+          const pairing = readPairing();
+          const code = pairCode();
+          if (pairing) this.send({ t: 'auth', device: pairing.device, proof: hmacSha256Hex(pairing.secret, String(msg.nonce)) });
+          else if (code) this.send({ t: 'pair', code, name: deviceName() });
+          else {
+            refused = true;
+            this.status = 'unpaired';
+            ws.close();
+          }
+          break;
+        }
+        case 'paired':
+          writePairing({ device: msg.device, secret: msg.secret });
+          // The code is spent; keep it out of the address and the history.
+          history.replaceState(null, '', location.pathname + location.search);
+          break;
+        case 'denied':
+          refused = true;
+          // The PC forgot this phone: stop presenting the old pairing.
+          if (msg.reason === 'unknown') writePairing(null);
+          this.status = 'unpaired';
+          break;
+        case 'welcome': {
+          this.welcomed = true;
+          this.status = 'online';
+          this.config = msg.config;
+          const topics = [...this.refs.keys()];
+          if (topics.length) this.send({ t: 'sub', topics });
+          break;
+        }
         case 'config':
           this.config = msg.config;
           break;
@@ -67,10 +139,13 @@ class Connection {
     ws.onclose = () => {
       if (this.ws !== ws) return;
       this.ws = null;
-      this.status = 'offline';
+      this.welcomed = false;
+      if (!refused) this.status = 'offline';
       for (const done of this.pending.values()) done({ ok: false, error: 'offline' });
       this.pending.clear();
-      setTimeout(() => this.open(), this.retryMs);
+      // An unpaired phone keeps knocking, slowly: it gets in as soon as it is
+      // paired, and a just-unpaired one retries once without its old pairing.
+      setTimeout(() => this.open(), refused ? 4000 : this.retryMs);
       this.retryMs = Math.min(this.retryMs * 2, 4000);
     };
 
@@ -89,12 +164,14 @@ class Connection {
   subscribe(topic: string): () => void {
     const n = this.refs.get(topic) ?? 0;
     this.refs.set(topic, n + 1);
-    if (n === 0) this.send({ t: 'sub', topics: [topic] });
+    // Before the welcome the agent is not listening for this yet; everything
+    // in `refs` is sent once it arrives.
+    if (n === 0 && this.welcomed) this.send({ t: 'sub', topics: [topic] });
     return () => {
       const left = (this.refs.get(topic) ?? 1) - 1;
       if (left <= 0) {
         this.refs.delete(topic);
-        this.send({ t: 'unsub', topics: [topic] });
+        if (this.welcomed) this.send({ t: 'unsub', topics: [topic] });
       } else {
         this.refs.set(topic, left);
       }
@@ -104,7 +181,7 @@ class Connection {
   private request(msg: Record<string, unknown>): Promise<Result> {
     const id = this.nextId++;
     return new Promise((resolve) => {
-      if (!this.send({ ...msg, id })) return resolve({ ok: false, error: 'offline' });
+      if (!this.welcomed || !this.send({ ...msg, id })) return resolve({ ok: false, error: 'offline' });
       this.pending.set(id, resolve);
       setTimeout(() => {
         if (this.pending.delete(id)) resolve({ ok: false, error: 'timeout' });
