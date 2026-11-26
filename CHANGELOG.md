@@ -2,6 +2,10 @@
 
 Verze se řídí [sémantickým verzováním](https://semver.org/lang/cs/). Každá verze má na GitHubu tag `vX.Y.Z` a vydání se sestaveným agentem pro Windows.
 
+## 1.0.1 – 2026-11-26
+
+- Projekt má licenci MIT.
+
 ## 1.0.0 – 2026-11-26
 
 První vydání.

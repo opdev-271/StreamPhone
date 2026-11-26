@@ -297,3 +297,7 @@ cargo test
 ```
 
 Agent do sebe vkládá sestavené UI ze složky `ui/dist`, takže před prvním `cargo build` musí proběhnout `npm run build`.
+
+## Licence
+
+[MIT](LICENSE)

@@ -1,7 +1,7 @@
 {
   "name": "streamphone-ui",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -17,5 +17,6 @@
   },
   "dependencies": {
     "@lucide/svelte": "^1.81.0"
-  }
+  },
+  "license": "MIT"
 }
