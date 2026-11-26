@@ -78,6 +78,8 @@ async fn client(socket: WebSocket, app: Arc<App>, remote: bool) {
 
     // A phone on Wi-Fi has to prove it is paired before it gets anything.
     let device = if remote {
+        // Each waiting handshake holds a connection for up to 20 seconds.
+        let Some(_slot) = crate::pairing::Slot::take() else { return };
         match crate::pairing::admit(&app, &mut tx, &mut rx).await {
             Some(device) => Some(device),
             None => return,

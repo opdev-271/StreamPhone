@@ -1,0 +1,36 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "StreamPhone",
+  "version": "1.2.0",
+  "identifier": "app.streamphone.desktop",
+  "build": {
+    "frontendDist": "./web"
+  },
+  "app": {
+    "windows": [],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["nsis"],
+    "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.ico"],
+    "externalBin": ["bin/streamphone-agent"],
+    "publisher": "opdev-271",
+    "category": "Utility",
+    "shortDescription": "An old Android phone as a touch panel for your PC",
+    "longDescription": "StreamPhone turns an old Android phone into a touch panel for your PC: buttons, media player, system load, AI sessions and Discord. Over USB or Wi-Fi.",
+    "license": "MIT",
+    "windows": {
+      "webviewInstallMode": {
+        "type": "downloadBootstrapper"
+      },
+      "nsis": {
+        "installMode": "currentUser",
+        "languages": ["English", "Czech", "Slovak", "German", "Polish", "Spanish", "French"],
+        "displayLanguageSelector": false
+      }
+    }
+  }
+}

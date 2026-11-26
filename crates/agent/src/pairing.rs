@@ -194,6 +194,30 @@ impl Pairing {
     }
 }
 
+/// Connections from the network that have not proved a pairing yet.
+static WAITING: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
+const MAX_WAITING: usize = 8;
+
+/// A place among the connections still being checked; freed when dropped.
+pub struct Slot;
+
+impl Slot {
+    pub fn take() -> Option<Self> {
+        use std::sync::atomic::Ordering::SeqCst;
+        if WAITING.fetch_add(1, SeqCst) >= MAX_WAITING {
+            WAITING.fetch_sub(1, SeqCst);
+            return None;
+        }
+        Some(Slot)
+    }
+}
+
+impl Drop for Slot {
+    fn drop(&mut self) {
+        WAITING.fetch_sub(1, std::sync::atomic::Ordering::SeqCst);
+    }
+}
+
 type Sink = SplitSink<WebSocket, Message>;
 type Stream = SplitStream<WebSocket>;
 

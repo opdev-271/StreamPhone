@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { number } from '../i18n.svelte';
+  import { t } from '../strings';
   import { buzz, conn } from '../conn.svelte';
   import type { ProcessRow, WidgetDef } from '../types';
 
@@ -19,7 +21,7 @@
 
   function size(bytes: number) {
     const mb = bytes / 1048576;
-    return mb < 1000 ? `${Math.round(mb)} MB` : `${(mb / 1024).toFixed(1).replace('.', ',')} GB`;
+    return mb < 1000 ? `${Math.round(mb)} MB` : `${number(mb / 1024, 1)} GB`;
   }
 
   // Ending a program takes two taps: the first one only arms the row.
@@ -49,8 +51,8 @@
 
 <div class="card procs">
   <div class="head">
-    <span class="label">Procesy</span>
-    <span class="label">{byMemory ? 'Paměť' : 'CPU'}</span>
+    <span class="label">{t('Procesy')}</span>
+    <span class="label">{byMemory ? t('Paměť') : 'CPU'}</span>
   </div>
   <div class="list">
     {#each rows as row (row.name)}
@@ -60,15 +62,15 @@
           {title(row.name)}{#if row.count > 1}<small>{row.count}</small>{/if}
         </span>
         {#if armed === row.name}
-          <button class="end" onclick={(e) => end(e, row.name)}>Ukončit</button>
+          <button class="end" onclick={(e) => end(e, row.name)}>{t('Ukončit')}</button>
         {:else}
           <span class="mem">{size(row.mem)}</span>
-          <span class="cpu">{row.cpu.toFixed(1).replace('.', ',')} %</span>
+          <span class="cpu">{number(row.cpu, 1)} %</span>
         {/if}
         <i style="width:{Math.min(100, byMemory ? 0 : row.cpu)}%"></i>
       </div>
     {:else}
-      <div class="dim">Načítám…</div>
+      <div class="dim">{t('Načítám…')}</div>
     {/each}
   </div>
 </div>

@@ -86,7 +86,11 @@ impl Config {
             if let Some(dir) = path.parent() {
                 std::fs::create_dir_all(dir).with_context(|| format!("creating {}", dir.display()))?;
             }
-            std::fs::write(path, DEFAULT_CONFIG).with_context(|| format!("writing {}", path.display()))?;
+            // A fresh install gets its pages and buttons named in the system's language.
+            let mut fresh = Self::built_in();
+            crate::lang::localize(&mut fresh, crate::lang::system());
+            let text = serde_json::to_string_pretty(&fresh)?;
+            std::fs::write(path, text).with_context(|| format!("writing {}", path.display()))?;
         }
         let text = std::fs::read_to_string(path).with_context(|| format!("reading {}", path.display()))?;
         serde_json::from_str(&text).with_context(|| format!("parsing {}", path.display()))

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="searching">Szukam komputera…</string>
+    <string name="not_found">Nie znaleziono komputera</string>
+    <string name="hint">Podłącz telefon kablem (z włączonym debugowaniem USB) albo sparuj go przez Wi-Fi: na komputerze otwórz StreamPhone → Połączenie.</string>
+    <string name="scan">Zeskanuj kod QR</string>
+    <string name="type">Wpisz adres</string>
+    <string name="retry">Spróbuj ponownie</string>
+    <string name="forget">Zapomnij Wi-Fi</string>
+    <string name="scan_prompt">Skieruj na kod QR w zakładce Połączenie</string>
+    <string name="address_title">Adres komputera</string>
+    <string name="code_hint">Kod parowania (8 znaków)</string>
+    <string name="connect">Połącz</string>
+    <string name="cancel">Anuluj</string>
+    <string name="bad_link">To nie jest kod parowania StreamPhone.</string>
+    <string name="bad_address">Wpisz adres komputera w sieci lokalnej, np. 192.168.0.10.</string>
+    <string name="over_usb">Kablem</string>
+</resources>

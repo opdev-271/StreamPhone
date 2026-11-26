@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from '../strings';
   import { Music, Pause, Play, SkipBack, SkipForward, Volume1, Volume2, VolumeX } from '@lucide/svelte';
   import { buzz, conn } from '../conn.svelte';
   import type { MediaNow, Volume, WidgetDef } from '../types';
@@ -64,10 +65,10 @@
     </div>
     <div class="meta">
       {#if media}
-        <div class="title">{media.title || 'Neznámá skladba'}</div>
+        <div class="title">{media.title || t('Neznámá skladba')}</div>
         <div class="artist">{media.artist}</div>
       {:else}
-        <div class="title idle">Nic nehraje</div>
+        <div class="title idle">{t('Nic nehraje')}</div>
       {/if}
     </div>
   </div>
@@ -81,24 +82,24 @@
   </div>
 
   <div class="controls">
-    <button aria-label="Předchozí" onclick={() => tap('media.prev')}>
+    <button aria-label={t('Předchozí')} onclick={() => tap('media.prev')}>
       <SkipBack size="6.4vmin" fill="currentColor" strokeWidth={1.5} />
     </button>
-    <button class="main" aria-label="Přehrát / pauza" onclick={() => tap('media.play_pause')}>
+    <button class="main" aria-label={t('Přehrát / pauza')} onclick={() => tap('media.play_pause')}>
       {#if media?.playing}
         <Pause size="9vmin" fill="currentColor" strokeWidth={0} />
       {:else}
         <Play size="9vmin" fill="currentColor" strokeWidth={1.5} />
       {/if}
     </button>
-    <button aria-label="Další" onclick={() => tap('media.next')}>
+    <button aria-label={t('Další')} onclick={() => tap('media.next')}>
       <SkipForward size="6.4vmin" fill="currentColor" strokeWidth={1.5} />
     </button>
   </div>
 
   {#if volume}
     <div class="vol">
-      <button aria-label="Ztlumit" class:muted={volume.muted} onclick={() => tap('audio.mute_toggle')}>
+      <button aria-label={t('Ztlumit')} class:muted={volume.muted} onclick={() => tap('audio.mute_toggle')}>
         {#if volume.muted}
           <VolumeX size="4.4vmin" fill="currentColor" />
         {:else}
@@ -110,7 +111,7 @@
         min="0"
         max="100"
         value={shown}
-        aria-label="Hlasitost"
+        aria-label={t('Hlasitost')}
         oninput={onVolume}
         onchange={onVolumeEnd}
         style="--fill:{shown}%"

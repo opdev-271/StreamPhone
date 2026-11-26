@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from '../strings';
   import { MicOff, Volume2 } from '@lucide/svelte';
   import { conn } from '../conn.svelte';
   import type { DiscordMember, DiscordServer, WidgetDef } from '../types';
@@ -55,17 +56,17 @@
   <div class="label">{title}</div>
   <div class="list">
     {#if !configured}
-      <div class="quiet">V editoru přidej ID serveru</div>
+      <div class="quiet">{t('V editoru přidej ID serveru')}</div>
     {:else if !servers}
-      <div class="quiet">Zjišťuji…</div>
+      <div class="quiet">{t('Zjišťuji…')}</div>
     {:else}
       {#each servers as server (server.id)}
         <div class="server">
           <span class="name">{server.name || server.id}</span>
-          {#if !server.problem}<span class="count">{server.online} online</span>{/if}
+          {#if !server.problem}<span class="count">{t('{n} online', { n: server.online })}</span>{/if}
         </div>
         {#if server.problem}
-          <div class="quiet">{problems[server.problem]}</div>
+          <div class="quiet">{t(problems[server.problem])}</div>
         {:else}
           {#each listed(server) as m (m.name)}
             <div class="member {m.status}" class:friend={isFriend(m)}>
@@ -85,7 +86,7 @@
               {/if}
             </div>
           {:else}
-            <div class="quiet">{onlyFriends ? 'Nikdo z přátel není online' : 'Nikdo není online'}</div>
+            <div class="quiet">{onlyFriends ? t('Nikdo z přátel není online') : t('Nikdo není online')}</div>
           {/each}
         {/if}
       {/each}

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="searching">Suche den Computer…</string>
+    <string name="not_found">Computer nicht gefunden</string>
+    <string name="hint">Schließe das Telefon per Kabel an (USB-Debugging aktiv) oder kopple es über WLAN: am Computer StreamPhone → Verbindung öffnen.</string>
+    <string name="scan">QR-Code scannen</string>
+    <string name="type">Adresse eingeben</string>
+    <string name="retry">Erneut versuchen</string>
+    <string name="forget">WLAN vergessen</string>
+    <string name="scan_prompt">Auf den QR-Code im Reiter Verbindung richten</string>
+    <string name="address_title">Adresse des Computers</string>
+    <string name="code_hint">Kopplungscode (8 Zeichen)</string>
+    <string name="connect">Verbinden</string>
+    <string name="cancel">Abbrechen</string>
+    <string name="bad_link">Das ist kein StreamPhone-Kopplungscode.</string>
+    <string name="bad_address">Gib die Adresse des Computers im lokalen Netzwerk ein, z. B. 192.168.0.10.</string>
+    <string name="over_usb">Per Kabel</string>
+    <string name="over_wifi">WLAN: %1$s</string>
+</resources>

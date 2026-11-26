@@ -4,12 +4,16 @@
   import Offline from './lib/Offline.svelte';
   import Backdrop from './lib/Backdrop.svelte';
   import { keepAwake } from './lib/awake';
+  import { setLanguage } from './lib/i18n.svelte';
   import { loadFont, resolveTheme, themeVars } from './lib/theme';
 
   let pager = $state<HTMLDivElement>();
   let current = $state(0);
 
   conn.connect();
+
+  // The language chosen on the PC, or the phone's own when it says "auto".
+  $effect(() => setLanguage(conn.config?.language));
 
   const themes = $derived(conn.config?.themes ?? {});
   const theme = $derived(resolveTheme(conn.config?.theme, themes));

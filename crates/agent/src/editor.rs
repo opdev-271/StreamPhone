@@ -7,7 +7,7 @@
 use std::sync::Arc;
 
 use axum::body::Bytes;
-use axum::extract::{DefaultBodyLimit, Path, Request, State};
+use axum::extract::{DefaultBodyLimit, Path, Query, Request, State};
 use axum::http::{StatusCode, Uri};
 use axum::middleware::{self, Next};
 use axum::response::{IntoResponse, Response};
@@ -68,8 +68,15 @@ async fn write_config(State(app): State<Arc<App>>, Json(body): Json<Value>) -> R
     }
 }
 
-async fn reset_config(State(app): State<Arc<App>>) -> Response {
+/// `?lang=cs` names the fresh pages and buttons in that language.
+async fn reset_config(State(app): State<Arc<App>>, Query(query): Query<std::collections::HashMap<String, String>>) -> Response {
     let mut config = Config::built_in();
+    let language = query.get("lang").and_then(|code| crate::lang::supported(code)).unwrap_or_else(crate::lang::system);
+    crate::lang::localize(&mut config, language);
+    // Keep the language the user picked in the editor.
+    if let Some(kept) = app.config.read().unwrap().extra.get("language") {
+        config.extra.insert("language".to_owned(), kept.clone());
+    }
     // The port is part of how the agent was started, not of the look.
     config.port = app.config.read().unwrap().port;
     match crate::config::save(&app, config.clone()) {
@@ -101,9 +108,16 @@ async fn event(State(app): State<Arc<App>>, Json(body): Json<Value>) -> Response
 }
 
 /// Where the agent lives, for the setup snippets the editor shows.
-async fn info() -> Response {
-    let exe = std::env::current_exe().map(|p| p.to_string_lossy().into_owned()).unwrap_or_default();
-    Json(json!({ "version": env!("CARGO_PKG_VERSION"), "exe": exe })).into_response()
+async fn info(State(app): State<Arc<App>>) -> Response {
+    // Inside the desktop app the command-line program sits next to it.
+    let exe = std::env::current_exe()
+        .map(|own| {
+            let cli = own.with_file_name(if cfg!(windows) { "streamphone-agent.exe" } else { "streamphone-agent" });
+            if cli.is_file() { cli } else { own }
+        })
+        .map(|p| p.to_string_lossy().into_owned())
+        .unwrap_or_default();
+    Json(json!({ "version": env!("CARGO_PKG_VERSION"), "exe": exe, "port": app.port })).into_response()
 }
 
 /// What the phone needs to pair over Wi-Fi: the address and a one-time code,

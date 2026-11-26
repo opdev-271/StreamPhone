@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from './strings';
   import Backdrop from './Backdrop.svelte';
   import { applyTheme, resolveTheme, themeVars, widgetVars, type Theme, type ThemeDef } from './theme';
   import type { PageDef } from './types';
@@ -36,7 +37,7 @@
         {#if Widget}
           <Widget def={w} />
         {:else}
-          <div class="card unknown">Neznámý widget „{w.type}“</div>
+          <div class="card unknown">{t('Neznámý widget')}: {w.type}</div>
         {/if}
       </div>
     {/each}

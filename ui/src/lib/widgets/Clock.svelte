@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { date as formatDate } from '../i18n.svelte';
   import type { WidgetDef } from '../types';
 
   let { def }: { def: WidgetDef } = $props();
@@ -31,7 +32,7 @@
     return css.join(';');
   });
   const secs = $derived(two(now.getSeconds()));
-  const date = $derived(now.toLocaleDateString([], { weekday: 'long', day: 'numeric', month: 'long' }));
+  const date = $derived(formatDate(now, { weekday: 'long', day: 'numeric', month: 'long' }));
 </script>
 
 <div class="card clock" class:big style={look}>

@@ -1,11 +1,12 @@
 {
   "port": 47800,
   "openOnConnect": true,
+  "language": "auto",
   "theme": "midnight",
   "pages": [
     {
       "id": "home",
-      "name": "Domů",
+      "name": "Home",
       "widgets": [
         {
           "id": "home-clock",
@@ -42,7 +43,7 @@
             "cols": 6,
             "buttons": [
               {
-                "label": "Terminál",
+                "label": "Terminal",
                 "icon": "terminal",
                 "action": {
                   "do": "launch",
@@ -60,7 +61,7 @@
                 }
               },
               {
-                "label": "Prohlížeč",
+                "label": "Browser",
                 "icon": "globe",
                 "action": {
                   "do": "launch",
@@ -69,7 +70,7 @@
                 "color": "cyan"
               },
               {
-                "label": "Výstřižek",
+                "label": "Snip",
                 "icon": "scissors",
                 "action": {
                   "do": "launch",
@@ -78,7 +79,7 @@
                 "color": "purple"
               },
               {
-                "label": "Ztlumit",
+                "label": "Mute",
                 "icon": "mute",
                 "color": "orange",
                 "action": {
@@ -86,7 +87,7 @@
                 }
               },
               {
-                "label": "Zamknout",
+                "label": "Lock",
                 "icon": "lock",
                 "color": "red",
                 "action": {
@@ -100,7 +101,7 @@
     },
     {
       "id": "work",
-      "name": "Práce",
+      "name": "Work",
       "widgets": [
         {
           "id": "work-timer",
@@ -151,7 +152,7 @@
             "cols": 4,
             "buttons": [
               {
-                "label": "Terminál",
+                "label": "Terminal",
                 "icon": "terminal",
                 "action": {
                   "do": "launch",
@@ -169,7 +170,7 @@
                 }
               },
               {
-                "label": "Prohlížeč",
+                "label": "Browser",
                 "icon": "globe",
                 "action": {
                   "do": "launch",
@@ -178,7 +179,7 @@
                 "color": "cyan"
               },
               {
-                "label": "Soubory",
+                "label": "Files",
                 "icon": "folder",
                 "color": "yellow",
                 "action": {
@@ -196,7 +197,7 @@
                 }
               },
               {
-                "label": "Výstřižek",
+                "label": "Snip",
                 "icon": "scissors",
                 "action": {
                   "do": "launch",
@@ -205,7 +206,7 @@
                 "color": "purple"
               },
               {
-                "label": "Správce úloh",
+                "label": "Task Manager",
                 "icon": "activity",
                 "action": {
                   "do": "keys",
@@ -214,7 +215,7 @@
                 "color": "mint"
               },
               {
-                "label": "Nastavení",
+                "label": "Settings",
                 "icon": "settings",
                 "action": {
                   "do": "launch",
@@ -223,7 +224,7 @@
                 "color": "gray"
               },
               {
-                "label": "Přehrát / pauza",
+                "label": "Play / pause",
                 "icon": "play",
                 "color": "pink",
                 "action": {
@@ -231,7 +232,7 @@
                 }
               },
               {
-                "label": "Ztlumit",
+                "label": "Mute",
                 "icon": "mute",
                 "color": "orange",
                 "action": {
@@ -239,7 +240,7 @@
                 }
               },
               {
-                "label": "Vypnout displej",
+                "label": "Display off",
                 "icon": "moon",
                 "color": "indigo",
                 "action": {
@@ -247,7 +248,7 @@
                 }
               },
               {
-                "label": "Zamknout",
+                "label": "Lock",
                 "icon": "lock",
                 "color": "red",
                 "action": {
@@ -261,7 +262,7 @@
     },
     {
       "id": "clock",
-      "name": "Hodiny",
+      "name": "Clock",
       "widgets": [
         {
           "id": "clock-big",

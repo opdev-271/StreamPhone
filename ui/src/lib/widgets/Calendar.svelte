@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { date as formatDate } from '../i18n.svelte';
   import type { WidgetDef } from '../types';
 
   let { def }: { def: WidgetDef } = $props();
@@ -11,10 +12,13 @@
   });
 
   const mondayFirst = $derived(def.config?.weekStart !== 'sunday');
-  const names = $derived(mondayFirst ? ['Po', 'Út', 'St', 'Čt', 'Pá', 'So', 'Ne'] : ['Ne', 'Po', 'Út', 'St', 'Čt', 'Pá', 'So']);
+  // Day names in the dashboard's language; 2024-01-01 was a Monday.
+  const names = $derived(
+    Array.from({ length: 7 }, (_, i) => formatDate(new Date(2024, 0, (mondayFirst ? 1 : 7) + i), { weekday: 'short' }).replace('.', '').slice(0, 2)),
+  );
 
   const title = $derived.by(() => {
-    const text = now.toLocaleDateString('cs', { month: 'long', year: 'numeric' });
+    const text = formatDate(now, { month: 'long', year: 'numeric' });
     return text.charAt(0).toUpperCase() + text.slice(1);
   });
 
@@ -38,7 +42,7 @@
 <div class="card cal">
   <div class="label">{title}</div>
   <div class="grid" style="grid-template-rows:auto repeat({cells.length / 7},minmax(0,1fr))">
-    {#each names as name, i (name)}
+    {#each names as name, i (i)}
       <span class="head" class:weekend={weekend(i)}>{name}</span>
     {/each}
     {#each cells as day, i (i)}

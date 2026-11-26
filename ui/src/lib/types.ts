@@ -80,6 +80,8 @@ export interface Config {
   night?: NightMode;
   /** Phones may connect over Wi-Fi after pairing. */
   wireless?: boolean;
+  /** A language code, or "auto" (the default) for each device's own language. */
+  language?: string;
 }
 
 /** Dims the dashboard at night, e.g. for a phone on the bedside table. */

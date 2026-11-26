@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from '../strings';
   import { Pause, Play, RotateCcw, SkipForward } from '@lucide/svelte';
   import { buzz, conn } from '../conn.svelte';
   import type { TimerState, WidgetDef } from '../types';
@@ -46,7 +47,7 @@
 </script>
 
 <div class="card timer" class:resting>
-  <div class="label">{resting ? 'Přestávka' : 'Soustředění'}</div>
+  <div class="label">{resting ? t('Přestávka') : t('Soustředění')}</div>
 
   <div class="dial">
     <svg viewBox="0 0 100 100" aria-hidden="true">
@@ -56,22 +57,22 @@
     <div class="time">{time}</div>
   </div>
 
-  <div class="rounds" aria-label="Dokončená kola: {timer?.rounds ?? 0}">
+  <div class="rounds" aria-label={t('Dokončená kola: {n}', { n: timer?.rounds ?? 0 })}>
     {#each Array(4) as _, i (i)}
       <i class:on={((timer?.rounds ?? 0) % 4 || ((timer?.rounds ?? 0) > 0 ? 4 : 0)) > i}></i>
     {/each}
   </div>
 
   <div class="controls">
-    <button aria-label="Od začátku" onclick={() => tap('timer.reset')}><RotateCcw size="4.6vmin" strokeWidth={2.2} /></button>
-    <button class="main" aria-label={timer?.running ? 'Pozastavit' : 'Spustit'} onclick={() => tap('timer.toggle')}>
+    <button aria-label={t('Od začátku')} onclick={() => tap('timer.reset')}><RotateCcw size="4.6vmin" strokeWidth={2.2} /></button>
+    <button class="main" aria-label={timer?.running ? t('Pozastavit') : t('Spustit')} onclick={() => tap('timer.toggle')}>
       {#if timer?.running}
         <Pause size="5.4vmin" fill="currentColor" strokeWidth={0} />
       {:else}
         <Play size="5.4vmin" fill="currentColor" strokeWidth={1.5} />
       {/if}
     </button>
-    <button aria-label="Přeskočit" onclick={() => tap('timer.skip')}><SkipForward size="4.6vmin" strokeWidth={2.2} /></button>
+    <button aria-label={t('Přeskočit')} onclick={() => tap('timer.skip')}><SkipForward size="4.6vmin" strokeWidth={2.2} /></button>
   </div>
 </div>
 

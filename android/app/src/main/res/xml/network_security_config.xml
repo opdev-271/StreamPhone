@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The PC serves the dashboard over plain http: through the USB port forward
+     (localhost) or on the local network. There is no certificate to check. -->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true" />
+</network-security-config>

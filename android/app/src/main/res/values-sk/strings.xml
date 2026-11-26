@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="searching">Hľadám počítač…</string>
+    <string name="not_found">Počítač sa nenašiel</string>
+    <string name="hint">Pripoj telefón káblom (so zapnutým ladením USB), alebo ho spáruj cez Wi-Fi: na počítači otvor StreamPhone → Pripojenie.</string>
+    <string name="scan">Naskenovať QR kód</string>
+    <string name="type">Zadať adresu</string>
+    <string name="retry">Skúsiť znova</string>
+    <string name="forget">Zabudnúť Wi-Fi</string>
+    <string name="scan_prompt">Namier na QR kód v záložke Pripojenie</string>
+    <string name="address_title">Adresa počítača</string>
+    <string name="code_hint">Párovací kód (8 znakov)</string>
+    <string name="connect">Pripojiť</string>
+    <string name="cancel">Zrušiť</string>
+    <string name="bad_link">Toto nie je párovací kód StreamPhone.</string>
+    <string name="bad_address">Zadaj adresu počítača v miestnej sieti, napr. 192.168.0.10.</string>
+    <string name="over_usb">Káblom</string>
+</resources>

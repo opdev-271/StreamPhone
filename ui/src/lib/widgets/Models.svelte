@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from '../strings';
   import { conn } from '../conn.svelte';
   import type { ModelServer, WidgetDef } from '../types';
 
@@ -7,15 +8,15 @@
   $effect(() => conn.subscribe('ai.models'));
 
   const servers = $derived(conn.data['ai.models'] as ModelServer[] | undefined);
-  const title = $derived((def.config?.title as string) || 'Lokální modely');
+  const title = $derived((def.config?.title as string) || t('Lokální modely'));
   // Servers that are switched off only take up room; hide them on request.
   const shown = $derived((servers ?? []).filter((s) => s.online || def.config?.hideOffline !== true));
 
   function summary(s: ModelServer) {
-    if (!s.online) return 'Neběží';
+    if (!s.online) return t('Neběží');
     // OpenAI-compatible servers only say what they offer, not what is loaded.
-    if (s.kind !== 'lmstudio' && s.kind !== 'ollama') return `${s.models.length} k dispozici`;
-    return s.models.length ? `${s.models.length} v paměti` : 'Nic v paměti';
+    if (s.kind !== 'lmstudio' && s.kind !== 'ollama') return t('{n} k dispozici', { n: s.models.length });
+    return s.models.length ? t('{n} v paměti', { n: s.models.length }) : t('Nic v paměti');
   }
 </script>
 
@@ -23,7 +24,7 @@
   <div class="label">{title}</div>
   <div class="list">
     {#if !servers}
-      <div class="quiet">Zjišťuji…</div>
+      <div class="quiet">{t('Zjišťuji…')}</div>
     {:else}
       {#each shown as s (s.name)}
         <div class="server" class:off={!s.online} class:busy={s.online && s.models.length > 0}>
@@ -39,11 +40,11 @@
             </div>
           {/each}
           {#if s.online && s.installed != null && s.installed > 0}
-            <div class="disk">{s.installed} na disku</div>
+            <div class="disk">{t('{n} na disku', { n: s.installed })}</div>
           {/if}
         </div>
       {:else}
-        <div class="quiet">Žádný server neběží</div>
+        <div class="quiet">{t('Žádný server neběží')}</div>
       {/each}
     {/if}
   </div>

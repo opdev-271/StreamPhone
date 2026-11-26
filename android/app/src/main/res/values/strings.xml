@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name" translatable="false">StreamPhone</string>
+    <string name="searching">Looking for the computer…</string>
+    <string name="not_found">Computer not found</string>
+    <string name="hint">Plug the phone in with a cable (USB debugging on), or pair it over Wi-Fi: on the computer open StreamPhone → Connection.</string>
+    <string name="scan">Scan QR code</string>
+    <string name="type">Enter address</string>
+    <string name="retry">Try again</string>
+    <string name="forget">Forget Wi-Fi</string>
+    <string name="scan_prompt">Point at the QR code on the Connection tab</string>
+    <string name="address_title">Computer\'s address</string>
+    <string name="address_hint" translatable="false">192.168.0.10</string>
+    <string name="code_hint">Pairing code (8 characters)</string>
+    <string name="connect">Connect</string>
+    <string name="cancel">Cancel</string>
+    <string name="bad_link">This is not a StreamPhone pairing code.</string>
+    <string name="bad_address">Enter the computer\'s address on the local network, e.g. 192.168.0.10.</string>
+    <string name="over_usb">By cable</string>
+    <string name="over_wifi">Wi-Fi: %1$s</string>
+</resources>

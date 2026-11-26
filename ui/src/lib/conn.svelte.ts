@@ -1,3 +1,4 @@
+import { t } from './strings';
 import { hmacSha256Hex } from './hmac';
 import type { Action, Config } from './types';
 
@@ -36,7 +37,7 @@ function deviceName(): string {
   const model = /Android [\d.]+; ([^;)]+?)(?: Build|\))/.exec(navigator.userAgent)?.[1];
   if (model && model !== 'K') return model.trim();
   if (/iPhone|iPad/.test(navigator.userAgent)) return /iPad/.test(navigator.userAgent) ? 'iPad' : 'iPhone';
-  return /Android/.test(navigator.userAgent) ? 'Telefon s Androidem' : 'Prohlížeč';
+  return /Android/.test(navigator.userAgent) ? t('Telefon s Androidem') : t('Prohlížeč');
 }
 
 /**

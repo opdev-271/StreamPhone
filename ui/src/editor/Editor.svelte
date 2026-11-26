@@ -12,6 +12,8 @@
   } from '../lib/theme';
   import type { Action, Config, DeckButton, KeyLook, NightMode, PageDef, WidgetDef } from '../lib/types';
   import Layout, { type Rect } from './Layout.svelte';
+  import { LANGUAGES, language } from '../lib/i18n.svelte';
+  import { t } from './strings';
 
   type Asset = { name: string; kind: 'image' | 'font'; size: number };
 
@@ -22,16 +24,16 @@
   let tab = $state('layout');
 
   const tabs = [
-    ['layout', 'Rozložení'],
-    ['theme', 'Motiv'],
-    ['colors', 'Barvy'],
-    ['cards', 'Karty'],
-    ['wall', 'Pozadí'],
-    ['font', 'Písmo'],
-    ['pages', 'Stránky'],
-    ['keys', 'Tlačítka'],
-    ['night', 'Noc'],
-    ['link', 'Připojení'],
+    ['layout', t('Rozložení')],
+    ['theme', t('Motiv')],
+    ['colors', t('Barvy')],
+    ['cards', t('Karty')],
+    ['wall', t('Pozadí')],
+    ['font', t('Písmo')],
+    ['pages', t('Stránky')],
+    ['keys', t('Tlačítka')],
+    ['night', t('Noc')],
+    ['link', t('Připojení')],
   ];
 
   const images = $derived(assets.filter((a) => a.kind === 'image'));
@@ -63,7 +65,7 @@
       await loadAssets();
     } catch (err) {
       status = 'error';
-      problem = `Agent neodpovídá (${(err as Error).message}).`;
+      problem = t('Agent neodpovídá ({m}).', { m: (err as Error).message });
     }
   }
   load();
@@ -89,9 +91,17 @@
     timer = setTimeout(() => save(body), 250);
   });
 
+  async function chooseLanguage(code: string) {
+    if (!cfg) return;
+    cfg.language = code;
+    clearTimeout(timer);
+    await save(JSON.stringify(cfg));
+    location.reload();
+  }
+
   async function reset() {
-    if (!confirm('Vrátit celé nastavení (stránky, tlačítka i vzhled) do výchozího stavu?')) return;
-    const fresh = await (await api('/api/reset', { method: 'POST' })).json();
+    if (!confirm(t('Vrátit celé nastavení (stránky, tlačítka i vzhled) do výchozího stavu?'))) return;
+    const fresh = await (await api(`/api/reset?lang=${language()}`, { method: 'POST' })).json();
     lastSaved = JSON.stringify(fresh);
     cfg = fresh;
     picked = 0;
@@ -108,7 +118,7 @@
       done(file.name);
     } catch (err) {
       status = 'error';
-      problem = `Soubor se nepodařilo nahrát: ${(err as Error).message}`;
+      problem = t('Soubor se nepodařilo nahrát: {m}', { m: (err as Error).message });
     }
   }
 
@@ -166,7 +176,7 @@
   }
 
   function saveAsTheme() {
-    const name = prompt('Název vlastního motivu:')?.trim();
+    const name = prompt(t('Název vlastního motivu:'))?.trim();
     if (!name) return;
     const snapshot = JSON.parse(JSON.stringify(theme())) as ThemeDef;
     cfg!.themes = { ...cfg!.themes, [name]: snapshot };
@@ -181,17 +191,17 @@
   }
 
   const colorRows: [keyof Colors, string][] = [
-    ['accent', 'Zvýraznění'],
-    ['bg', 'Pozadí'],
-    ['card', 'Karty'],
-    ['cardHi', 'Karty – světlejší'],
-    ['line', 'Okraje'],
-    ['text', 'Text'],
-    ['dim', 'Text – tlumený'],
-    ['mute', 'Text – nejtlumenější'],
-    ['ok', 'V pořádku'],
-    ['warn', 'Varování'],
-    ['bad', 'Chyba'],
+    ['accent', t('Zvýraznění')],
+    ['bg', t('Pozadí')],
+    ['card', t('Karty')],
+    ['cardHi', t('Karty – světlejší')],
+    ['line', t('Okraje')],
+    ['text', t('Text')],
+    ['dim', t('Text – tlumený')],
+    ['mute', t('Text – nejtlumenější')],
+    ['ok', t('V pořádku')],
+    ['warn', t('Varování')],
+    ['bad', t('Chyba')],
   ];
 
   /** `<input type=color>` only understands #rrggbb. */
@@ -203,11 +213,11 @@
   };
 
   const fontChoices: [string, string][] = [
-    ['', 'Systémové'],
-    ['serif', 'Patkové'],
-    ['monospace', 'Strojové'],
-    ["'Roboto Condensed', sans-serif-condensed, sans-serif", 'Zúžené'],
-    ['cursive', 'Psací'],
+    ['', t('Systémové')],
+    ['serif', t('Patkové')],
+    ['monospace', t('Strojové')],
+    ["'Roboto Condensed', sans-serif-condensed, sans-serif", t('Zúžené')],
+    ['cursive', t('Psací')],
   ];
 
   function setFont(key: 'family' | 'file', value: string) {
@@ -264,7 +274,7 @@
   });
 
   async function forget(device: Paired) {
-    if (!confirm(`Zrušit spárování s „${device.name}“? Telefon se odpojí a bude se muset spárovat znovu.`)) return;
+    if (!confirm(t('Zrušit spárování s „{name}“? Telefon se odpojí a bude se muset spárovat znovu.', { name: device.name }))) return;
     await api(`/api/devices/${device.id}`, { method: 'DELETE' });
     loadLink();
   }
@@ -272,16 +282,16 @@
   // ---- layout ------------------------------------------------------------
 
   const widgetNames: Record<string, string> = {
-    clock: 'Hodiny',
-    media: 'Přehrávač',
-    system: 'Počítač',
-    deck: 'Tlačítka',
-    timer: 'Časovač',
-    todo: 'Úkoly',
-    processes: 'Procesy',
-    calendar: 'Kalendář',
-    ai: 'AI relace',
-    models: 'Lokální modely',
+    clock: t('Hodiny'),
+    media: t('Přehrávač'),
+    system: t('Počítač'),
+    deck: t('Tlačítka'),
+    timer: t('Časovač'),
+    todo: t('Úkoly'),
+    processes: t('Procesy'),
+    calendar: t('Kalendář'),
+    ai: t('AI relace'),
+    models: t('Lokální modely'),
     discord: 'Discord',
   };
   const widgetSizes: Record<string, [number, number]> = {
@@ -300,16 +310,21 @@
 
   // Where the agent's program is, for the commands other tools have to run.
   let agentExe = $state('streamphone-agent.exe');
+  let dashboardPort = $state<number | null>(null);
   api('/api/info')
     .then((res) => res.json())
-    .then((info) => info.exe && (agentExe = info.exe))
+    .then((info) => {
+      if (info.exe) agentExe = info.exe;
+      // The port the agent really listens on (it can be overridden at start).
+      if (info.port) dashboardPort = info.port;
+    })
     .catch(() => {});
 
   let tool = $state('claude');
   const toolTabs = [
     ['claude', 'Claude Code'],
     ['codex', 'Codex'],
-    ['other', 'Ostatní'],
+    ['other', t('Ostatní')],
   ];
 
   const codexSnippet = $derived.by(() => {
@@ -323,12 +338,12 @@
   const codexNotify = $derived(`notify = [${[agentExe, 'report', '--source', 'codex'].map((part) => JSON.stringify(part)).join(', ')}]`);
   const otherSnippet = $derived(
     [
-      '# Začátek práce, čekání na tebe a konec, z jakéhokoli skriptu nebo nástroje:',
-      `"${agentExe}" report --source aider --status working --title "Refaktoring košíku"`,
-      `"${agentExe}" report --source aider --status waiting --detail "Potvrdit změny?"`,
-      `"${agentExe}" report --source aider --status done --detail "Hotovo, 3 soubory"`,
+      t('# Začátek práce, čekání na tebe a konec, z jakéhokoli skriptu nebo nástroje:'),
+      `"${agentExe}" report --source aider --status working --title "Refactoring the cart"`,
+      `"${agentExe}" report --source aider --status waiting --detail "Apply the changes?"`,
+      `"${agentExe}" report --source aider --status done --detail "Done, 3 files"`,
       '',
-      '# Nástroj s hooky, který posílá událost jako JSON na standardní vstup:',
+      t('# Nástroj s hooky, který posílá událost jako JSON na standardní vstup:'),
       `"${agentExe}" hook --source gemini`,
     ].join('\n'),
   );
@@ -433,7 +448,7 @@
     const spot = freeSpot(pg, w, h) ?? freeSpot(pg, 2, 2) ?? freeSpot(pg, 1, 1) ?? { x: 0, y: 0, w, h };
     const fresh: WidgetDef = { id: freeId(`${pg.id}-${type}`), type, ...spot };
     if (type === 'deck') {
-      fresh.config = { cols: 3, buttons: [{ label: 'Nové', icon: 'star', color: 'blue', action: { do: 'media.play_pause' } }] };
+      fresh.config = { cols: 3, buttons: [{ label: t('Nové'), icon: 'star', color: 'blue', action: { do: 'media.play_pause' } }] };
     }
     pg.widgets.push(fresh);
     selectedId = fresh.id;
@@ -447,14 +462,14 @@
 
   function addPage() {
     const c = cfg!;
-    c.pages.push({ id: freeId('page'), name: 'Nová stránka', widgets: [] });
+    c.pages.push({ id: freeId('page'), name: t('Nová stránka'), widgets: [] });
     pageIndex = c.pages.length - 1;
     selectedId = null;
   }
 
   function removePage() {
     const c = cfg!;
-    if (c.pages.length < 2 || !confirm(`Smazat stránku „${page!.name}“ i s jejími widgety?`)) return;
+    if (c.pages.length < 2 || !confirm(t('Smazat stránku „{name}“ i s jejími widgety?', { name: page!.name }))) return;
     c.pages.splice(pageIndex, 1);
     pageIndex = Math.max(0, pageIndex - 1);
     selectedId = null;
@@ -504,25 +519,25 @@
   const key = $derived(keys[Math.min(picked, keys.length - 1)] as DeckButton | undefined);
 
   const looks: [KeyLook, string][] = [
-    ['icon', 'Barevná ikona'],
-    ['glyph', 'Jen symbol'],
-    ['tinted', 'Tónované'],
-    ['filled', 'Celé barevné'],
+    ['icon', t('Barevná ikona')],
+    ['glyph', t('Jen symbol')],
+    ['tinted', t('Tónované')],
+    ['filled', t('Celé barevné')],
   ];
 
   const actionKinds: [Action['do'], string][] = [
-    ['launch', 'Spustit program / web'],
-    ['keys', 'Klávesová zkratka'],
-    ['media.play_pause', 'Přehrát / pauza'],
-    ['media.next', 'Další skladba'],
-    ['media.prev', 'Předchozí skladba'],
-    ['audio.mute_toggle', 'Ztlumit zvuk'],
-    ['audio.set_volume', 'Nastavit hlasitost'],
-    ['system.lock', 'Zamknout počítač'],
-    ['display.off', 'Vypnout displej'],
-    ['timer.toggle', 'Časovač: start / pauza'],
-    ['timer.reset', 'Časovač: od začátku'],
-    ['timer.skip', 'Časovač: přeskočit'],
+    ['launch', t('Spustit program / web')],
+    ['keys', t('Klávesová zkratka')],
+    ['media.play_pause', t('Přehrát / pauza')],
+    ['media.next', t('Další skladba')],
+    ['media.prev', t('Předchozí skladba')],
+    ['audio.mute_toggle', t('Ztlumit zvuk')],
+    ['audio.set_volume', t('Nastavit hlasitost')],
+    ['system.lock', t('Zamknout počítač')],
+    ['display.off', t('Vypnout displej')],
+    ['timer.toggle', t('Časovač: start / pauza')],
+    ['timer.reset', t('Časovač: od začátku')],
+    ['timer.skip', t('Časovač: přeskočit')],
   ];
 
   function deckConfig() {
@@ -548,7 +563,7 @@
 
   function addKey() {
     const list = deckConfig().buttons as DeckButton[];
-    list.push({ label: 'Nové', icon: 'star', color: 'blue', action: { do: 'media.play_pause' } });
+    list.push({ label: t('Nové'), icon: 'star', color: 'blue', action: { do: 'media.play_pause' } });
     picked = list.length - 1;
   }
 
@@ -592,7 +607,7 @@
         onclick={() => change(name)}
       ></button>
     {/each}
-    <input type="color" value={hex6(value ?? '#888888')} oninput={(e) => change(str(e))} title="Vlastní barva" />
+    <input type="color" value={hex6(value ?? '#888888')} oninput={(e) => change(str(e))} title={t('Vlastní barva')} />
   </div>
 {/snippet}
 
@@ -600,8 +615,16 @@
   <aside>
     <header>
       <h1>StreamPhone</h1>
+      {#if cfg}
+        <select class="language" title={t('Jazyk')} aria-label={t('Jazyk')} value={cfg.language ?? 'auto'} onchange={(e) => chooseLanguage(str(e))}>
+          <option value="auto">{t('Podle zařízení')}</option>
+          {#each Object.entries(LANGUAGES) as [code, name] (code)}
+            <option value={code}>{name}</option>
+          {/each}
+        </select>
+      {/if}
       <span class="state {status}">
-        {#if status === 'saving'}Ukládám…{:else if status === 'saved'}Uloženo{:else if status === 'error'}Chyba{/if}
+        {#if status === 'saving'}{t('Ukládám…')}{:else if status === 'saved'}{t('Uloženo')}{:else if status === 'error'}{t('Chyba')}{/if}
       </span>
     </header>
 
@@ -618,7 +641,7 @@
     {#if cfg}
       <div class="pane">
         {#if tab === 'layout' && page}
-          <h2>Rozložení</h2>
+          <h2>{t('Rozložení')}</h2>
           <div class="chips">
             {#each cfg.pages as pg, i (pg.id)}
               <button
@@ -629,143 +652,128 @@
                 }}>{pg.name}</button
               >
             {/each}
-            <button class="plus" onclick={addPage} title="Přidat stránku">+</button>
+            <button class="plus" onclick={addPage} title={t('Přidat stránku')}>+</button>
           </div>
           <label class="row">
-            <span>Název stránky</span>
+            <span>{t('Název stránky')}</span>
             <input class="wide" type="text" value={page.name} oninput={(e) => (page.name = str(e))} />
           </label>
           <div class="actions">
-            <button class="btn" onclick={() => movePage(-1)} disabled={pageIndex === 0}>← Dřív</button>
-            <button class="btn" onclick={() => movePage(1)} disabled={pageIndex >= cfg.pages.length - 1}>Později →</button>
-            <button class="btn danger" onclick={removePage} disabled={cfg.pages.length < 2}>Smazat stránku</button>
+            <button class="btn" onclick={() => movePage(-1)} disabled={pageIndex === 0}>{t('← Dřív')}</button>
+            <button class="btn" onclick={() => movePage(1)} disabled={pageIndex >= cfg.pages.length - 1}>{t('Později →')}</button>
+            <button class="btn danger" onclick={removePage} disabled={cfg.pages.length < 2}>{t('Smazat stránku')}</button>
           </div>
 
-          <h3>Přidat widget</h3>
+          <h3>{t('Přidat widget')}</h3>
           <div class="actions">
             {#each Object.keys(widgetNames) as type (type)}
               <button class="btn" onclick={() => addWidget(type)}>+ {widgetNames[type]}</button>
             {/each}
           </div>
-          <p class="hint">
-            Widgety přetahuj přímo v náhledu vpravo. Velikost změníš tažením za roh. Překrývající se widgety jsou červené.
-          </p>
+          <p class="hint">{@html t('Widgety přetahuj přímo v náhledu vpravo. Velikost změníš tažením za roh. Překrývající se widgety jsou červené.')}</p>
 
           {#if widget}
             <fieldset>
               <h3>{widgetNames[widget.type] ?? widget.type}</h3>
-              {@render slider('Sloupec', widget.x + 1, 1, 13 - widget.w, 1, (v) => (widget.x = v - 1))}
-              {@render slider('Řádek', widget.y + 1, 1, 7 - widget.h, 1, (v) => (widget.y = v - 1))}
-              {@render slider('Šířka', widget.w, 1, 12 - widget.x, 1, (v) => (widget.w = v))}
-              {@render slider('Výška', widget.h, 1, 6 - widget.y, 1, (v) => (widget.h = v))}
+              {@render slider(t('Sloupec'), widget.x + 1, 1, 13 - widget.w, 1, (v) => (widget.x = v - 1))}
+              {@render slider(t('Řádek'), widget.y + 1, 1, 7 - widget.h, 1, (v) => (widget.y = v - 1))}
+              {@render slider(t('Šířka'), widget.w, 1, 12 - widget.x, 1, (v) => (widget.w = v))}
+              {@render slider(t('Výška'), widget.h, 1, 6 - widget.y, 1, (v) => (widget.h = v))}
 
               {#if widget.type === 'clock'}
                 <label class="row">
-                  <span>Formát</span>
+                  <span>{t('Formát')}</span>
                   <select value={widget.config?.format ?? '24h'} onchange={(e) => setOption('format', str(e), '24h')}>
-                    <option value="24h">24 hodin</option>
-                    <option value="12h">12 hodin</option>
+                    <option value="24h">{t('24 hodin')}</option>
+                    <option value="12h">{t('12 hodin')}</option>
                   </select>
                 </label>
                 <label class="row">
-                  <span>Vteřiny</span>
+                  <span>{t('Vteřiny')}</span>
                   <input type="checkbox" checked={widget.config?.seconds !== false} onchange={(e) => setOption('seconds', on(e), true)} />
                 </label>
                 <label class="row">
-                  <span>Datum</span>
+                  <span>{t('Datum')}</span>
                   <input type="checkbox" checked={widget.config?.date !== false} onchange={(e) => setOption('date', on(e), true)} />
                 </label>
                 <label class="row">
-                  <span>Zarovnání</span>
+                  <span>{t('Zarovnání')}</span>
                   <select value={widget.config?.align ?? ''} onchange={(e) => setOption('align', str(e), '')}>
-                    <option value="">Výchozí</option>
-                    <option value="left">Vlevo</option>
-                    <option value="center">Na střed</option>
-                    <option value="right">Vpravo</option>
+                    <option value="">{t('Výchozí')}</option>
+                    <option value="left">{t('Vlevo')}</option>
+                    <option value="center">{t('Na střed')}</option>
+                    <option value="right">{t('Vpravo')}</option>
                   </select>
                 </label>
-                {@render slider('Tloušťka', widget.config?.weight ?? 500, 100, 900, 100, (v) => setOption('weight', v, 500))}
+                {@render slider(t('Tloušťka'), widget.config?.weight ?? 500, 100, 900, 100, (v) => setOption('weight', v, 500))}
               {:else if widget.type === 'media'}
                 <label class="row">
-                  <span>Obarvit obalem alba</span>
+                  <span>{t('Obarvit obalem alba')}</span>
                   <input type="checkbox" checked={widget.config?.artBackground !== false} onchange={(e) => setOption('artBackground', on(e), true)} />
                 </label>
               {:else if widget.type === 'system'}
                 <label class="row">
-                  <span>Graf</span>
+                  <span>{t('Graf')}</span>
                   <input type="checkbox" checked={widget.config?.graph !== false} onchange={(e) => setOption('graph', on(e), true)} />
                 </label>
               {:else if widget.type === 'ai'}
                 <label class="row">
-                  <span>Nadpis</span>
+                  <span>{t('Nadpis')}</span>
                   <input class="wide" type="text" placeholder="Claude Code" value={widget.config?.title ?? ''} oninput={(e) => setOption('title', str(e), '')} />
                 </label>
                 <label class="row">
-                  <span>Povolit / Zamítnout</span>
+                  <span>{t('Povolit / Zamítnout')}</span>
                   <input type="checkbox" checked={widget.config?.approve !== false} onchange={(e) => setOption('approve', on(e), true)} />
                 </label>
-                {@render slider('Čekat na odpověď', widget.config?.wait ?? 45, 5, 300, 5, (v) => setOption('wait', v, 45), ' s')}
-                <h3>Zapnutí v nástrojích</h3>
+                {@render slider(t('Čekat na odpověď'), widget.config?.wait ?? 45, 5, 300, 5, (v) => setOption('wait', v, 45), ' s')}
+                <h3>{t('Zapnutí v nástrojích')}</h3>
                 <div class="chips">
                   {#each toolTabs as [id, name] (id)}
                     <button class:on={tool === id} onclick={() => (tool = id)}>{name}</button>
                   {/each}
                 </div>
                 {#if tool === 'claude'}
-                  <p class="hint first">
-                    Vlož do <code>%USERPROFILE%\.claude\settings.json</code> (sluč s tím, co tam už máš) a spusť Claude Code znovu.
-                  </p>
+                  <p class="hint first">{@html t('Vlož do <code>%USERPROFILE%\\.claude\\settings.json</code> (sluč s tím, co tam už máš) a spusť Claude Code znovu.')}</p>
                   <textarea readonly rows="8" value={hookSnippet}></textarea>
                   <div class="actions">
-                    <button class="btn" onclick={copyHooks}>{copied ? 'Zkopírováno' : 'Zkopírovat'}</button>
+                    <button class="btn" onclick={copyHooks}>{copied ? t('Zkopírováno') : t('Zkopírovat')}</button>
                   </div>
                 {:else if tool === 'codex'}
-                  <p class="hint first">
-                    Plný přehled (začátek, nástroje, konec): ulož jako <code>%USERPROFILE%\.codex\hooks.json</code>. Codex se při
-                    prvním spuštění zeptá, jestli hookům důvěřuješ.
-                  </p>
+                  <p class="hint first">{@html t('Plný přehled (začátek, nástroje, konec): ulož jako <code>%USERPROFILE%\\.codex\\hooks.json</code>. Codex se při prvním spuštění zeptá, jestli hookům důvěřuješ.')}</p>
                   <textarea readonly rows="8" value={codexSnippet}></textarea>
-                  <p class="hint first" style="margin-top:10px">
-                    Nebo jen oznámení o dokončení: přidej tento řádek do <code>%USERPROFILE%\.codex\config.toml</code>.
-                  </p>
+                  <p class="hint first" style="margin-top:10px">{@html t('Nebo jen oznámení o dokončení: přidej tento řádek do <code>%USERPROFILE%\\.codex\\config.toml</code>.')}</p>
                   <textarea readonly rows="2" value={codexNotify}></textarea>
                 {:else}
-                  <p class="hint first">
-                    Cokoli dalšího se ohlásí příkazem agenta. Jméno za <code>--source</code> si zvol sám, ukáže se na telefonu jako štítek.
-                  </p>
+                  <p class="hint first">{@html t('Cokoli dalšího se ohlásí příkazem agenta. Jméno za <code>--source</code> si zvol sám, ukáže se na telefonu jako štítek.')}</p>
                   <textarea readonly rows="8" value={otherSnippet}></textarea>
                 {/if}
-                <p class="hint">
-                  S volbou Povolit / Zamítnout počká žádost o povolení nastavenou dobu na odpověď z telefonu. Když nepřijde,
-                  zeptá se Claude Code jako obvykle ve svém okně. Klepnutím na Povolit pouštíš příkaz na svém počítači, proto
-                  se na telefonu ukazuje celý.
-                </p>
+                <p class="hint">{@html t('S volbou Povolit / Zamítnout počká žádost o povolení nastavenou dobu na odpověď z telefonu. Když nepřijde, zeptá se Claude Code jako obvykle ve svém okně. Klepnutím na Povolit pouštíš příkaz na svém počítači, proto se na telefonu ukazuje celý.')}</p>
               {:else if widget.type === 'discord'}
                 {@const ids = (widget.config?.servers as string[] | undefined) ?? []}
                 <label class="row">
-                  <span>Nadpis</span>
+                  <span>{t('Nadpis')}</span>
                   <input class="wide" type="text" placeholder="Discord" value={widget.config?.title ?? ''} oninput={(e) => setOption('title', str(e), '')} />
                 </label>
-                <h3>Servery</h3>
+                <h3>{t('Servery')}</h3>
                 {#each ids as id, i (i)}
                   <div class="row">
                     <input
                       class="wide"
                       type="text"
                       inputmode="numeric"
-                      placeholder="ID serveru, např. 290926798626999250"
+                      placeholder={t('ID serveru, např. 290926798626999250')}
                       value={id}
                       onchange={(e) => setOption('servers', ids.map((old, j) => (j === i ? str(e).trim() : old)), null)}
                     />
-                    <button class="x" title="Odebrat" onclick={() => setOption('servers', ids.filter((_, j) => j !== i), null)}>×</button>
+                    <button class="x" title={t('Odebrat')} onclick={() => setOption('servers', ids.filter((_, j) => j !== i), null)}>×</button>
                   </div>
                 {/each}
                 <div class="actions">
                   <button class="btn" onclick={() => setOption('servers', [...ids, ''], null)} disabled={ids.length >= 5}>+ Server</button>
                 </div>
-                <h3>Přátelé</h3>
+                <h3>{t('Přátelé')}</h3>
                 <label class="row">
-                  <span>Jména</span>
+                  <span>{t('Jména')}</span>
                   <input
                     class="wide"
                     type="text"
@@ -783,28 +791,24 @@
                   />
                 </label>
                 <label class="row">
-                  <span>Jen přátelé</span>
+                  <span>{t('Jen přátelé')}</span>
                   <input type="checkbox" checked={widget.config?.onlyFriends === true} onchange={(e) => setOption('onlyFriends', on(e), false)} />
                 </label>
                 <label class="row">
-                  <span>Zavibrovat, když přijdou</span>
+                  <span>{t('Zavibrovat, když přijdou')}</span>
                   <input type="checkbox" checked={widget.config?.notify !== false} onchange={(e) => setOption('notify', on(e), true)} />
                 </label>
-                <p class="hint">
-                  Discord cizím aplikacím seznam přátel nevydává. Widget proto čte veřejný „widget serveru“: správce ho zapne v
-                  <code>Nastavení serveru → Widget</code>, kde je i ID serveru. Pak je vidět, kdo je na serveru online, co hraje a
-                  v jakém hlasovém kanálu sedí. Jména přátel piš tak, jak je Discord na serveru ukazuje; budou nahoře a zvýrazněná.
-                </p>
+                <p class="hint">{@html t('Discord cizím aplikacím seznam přátel nevydává. Widget proto čte veřejný „widget serveru“: správce ho zapne v <code>Nastavení serveru → Widget</code>, kde je i ID serveru. Pak je vidět, kdo je na serveru online, co hraje a v jakém hlasovém kanálu sedí. Jména přátel piš tak, jak je Discord na serveru ukazuje; budou nahoře a zvýrazněná.')}</p>
               {:else if widget.type === 'models'}
                 <label class="row">
-                  <span>Nadpis</span>
-                  <input class="wide" type="text" placeholder="Lokální modely" value={widget.config?.title ?? ''} oninput={(e) => setOption('title', str(e), '')} />
+                  <span>{t('Nadpis')}</span>
+                  <input class="wide" type="text" placeholder={t('Lokální modely')} value={widget.config?.title ?? ''} oninput={(e) => setOption('title', str(e), '')} />
                 </label>
                 <label class="row">
-                  <span>Skrýt vypnuté</span>
+                  <span>{t('Skrýt vypnuté')}</span>
                   <input type="checkbox" checked={widget.config?.hideOffline === true} onchange={(e) => setOption('hideOffline', on(e), false)} />
                 </label>
-                <h3>Sledované servery</h3>
+                <h3>{t('Sledované servery')}</h3>
                 {#each knownServers as known (known.url)}
                   <label class="row">
                     <span>{known.name}</span>
@@ -814,135 +818,130 @@
                 {#each serverList as s, i (i)}
                   {#if !knownServers.some((k) => k.url === s.url)}
                     <div class="row">
-                      <input class="wide" type="text" placeholder="Název" value={s.name} onchange={(e) => editServer(i, 'name', str(e))} />
+                      <input class="wide" type="text" placeholder={t('Název')} value={s.name} onchange={(e) => editServer(i, 'name', str(e))} />
                       <input class="wide" style="margin-left:6px;flex:2" type="text" placeholder="http://127.0.0.1:8080" value={s.url} onchange={(e) => editServer(i, 'url', str(e))} />
-                      <button class="x" title="Odebrat" onclick={() => setServers(serverList.filter((_, j) => j !== i))}>×</button>
+                      <button class="x" title={t('Odebrat')} onclick={() => setServers(serverList.filter((_, j) => j !== i))}>×</button>
                     </div>
                   {/if}
                 {/each}
                 <div class="actions">
-                  <button class="btn" onclick={() => setServers([...serverList, { name: '', url: '', kind: 'openai' }])}>+ Další server</button>
+                  <button class="btn" onclick={() => setServers([...serverList, { name: '', url: '', kind: 'openai' }])}>{t('+ Další server')}</button>
                 </div>
-                <p class="hint">
-                  Další server je cokoli s rozhraním kompatibilním s OpenAI: llama.cpp, Jan, KoboldCpp, LocalAI, vLLM,
-                  text-generation-webui. Zadej adresu bez <code>/v1</code>, jen <code>http://</code>.
-                </p>
+                <p class="hint">{@html t('Další server je cokoli s rozhraním kompatibilním s OpenAI: llama.cpp, Jan, KoboldCpp, LocalAI, vLLM, text-generation-webui. Zadej adresu bez <code>/v1</code>, jen <code>http://</code>.')}</p>
               {:else if widget.type === 'timer'}
-                {@render slider('Soustředění', widget.config?.focus ?? 25, 5, 90, 5, (v) => setOption('focus', v, 25), ' min')}
-                {@render slider('Přestávka', widget.config?.rest ?? 5, 1, 30, 1, (v) => setOption('rest', v, 5), ' min')}
+                {@render slider(t('Soustředění'), widget.config?.focus ?? 25, 5, 90, 5, (v) => setOption('focus', v, 25), ' min')}
+                {@render slider(t('Přestávka'), widget.config?.rest ?? 5, 1, 30, 1, (v) => setOption('rest', v, 5), ' min')}
               {:else if widget.type === 'todo'}
                 <label class="row">
-                  <span>Nadpis</span>
-                  <input class="wide" type="text" placeholder="Úkoly" value={widget.config?.title ?? ''} oninput={(e) => setOption('title', str(e), '')} />
+                  <span>{t('Nadpis')}</span>
+                  <input class="wide" type="text" placeholder={t('Úkoly')} value={widget.config?.title ?? ''} oninput={(e) => setOption('title', str(e), '')} />
                 </label>
               {:else if widget.type === 'processes'}
                 <label class="row">
-                  <span>Řadit podle</span>
+                  <span>{t('Řadit podle')}</span>
                   <select value={widget.config?.sort ?? 'cpu'} onchange={(e) => setOption('sort', str(e), 'cpu')}>
-                    <option value="cpu">Procesoru</option>
-                    <option value="mem">Paměti</option>
+                    <option value="cpu">{t('Procesoru')}</option>
+                    <option value="mem">{t('Paměti')}</option>
                   </select>
                 </label>
                 <label class="row">
-                  <span>Povolit ukončení</span>
+                  <span>{t('Povolit ukončení')}</span>
                   <input type="checkbox" checked={widget.config?.kill !== false} onchange={(e) => setOption('kill', on(e), true)} />
                 </label>
               {:else if widget.type === 'calendar'}
                 <label class="row">
-                  <span>Týden začíná</span>
+                  <span>{t('Týden začíná')}</span>
                   <select value={widget.config?.weekStart ?? 'monday'} onchange={(e) => setOption('weekStart', str(e), 'monday')}>
-                    <option value="monday">V pondělí</option>
-                    <option value="sunday">V neděli</option>
+                    <option value="monday">{t('V pondělí')}</option>
+                    <option value="sunday">{t('V neděli')}</option>
                   </select>
                 </label>
               {:else if widget.type === 'deck'}
                 <div class="actions">
-                  <button class="btn" onclick={editKeys}>Upravit tlačítka →</button>
+                  <button class="btn" onclick={editKeys}>{t('Upravit tlačítka →')}</button>
                 </div>
               {/if}
 
-              <h3>Vzhled widgetu</h3>
+              <h3>{t('Vzhled widgetu')}</h3>
               <div class="row top">
-                <span>Zvýraznění</span>
+                <span>{t('Zvýraznění')}</span>
                 {@render swatches(widget.style?.accent, (v) => setStyle('accent', v))}
               </div>
               <div class="row top">
-                <span>Barva karty</span>
+                <span>{t('Barva karty')}</span>
                 {@render swatches(widget.style?.background, (v) => setStyle('background', v))}
               </div>
-              {@render slider('Průhlednost', 1 - (widget.style?.opacity ?? look.card.opacity), 0, 1, 0.05, (v) => setStyle('opacity', Math.round((1 - v) * 100) / 100))}
+              {@render slider(t('Průhlednost'), 1 - (widget.style?.opacity ?? look.card.opacity), 0, 1, 0.05, (v) => setStyle('opacity', Math.round((1 - v) * 100) / 100))}
               <div class="actions">
-                <button class="btn" onclick={() => delete widget.style} disabled={!widget.style}>Vzhled podle motivu</button>
-                <button class="btn danger" onclick={removeWidget}>Smazat widget</button>
+                <button class="btn" onclick={() => delete widget.style} disabled={!widget.style}>{t('Vzhled podle motivu')}</button>
+                <button class="btn danger" onclick={removeWidget}>{t('Smazat widget')}</button>
               </div>
             </fieldset>
           {/if}
         {:else if tab === 'theme'}
-          <h2>Motiv</h2>
+          <h2>{t('Motiv')}</h2>
           <div class="themes">
             {#each themeNames as name (name)}
-              {@const t = resolveTheme(name, own)}
+              {@const sample = resolveTheme(name, own)}
               <div class="theme" class:on={currentPreset === name}>
                 <button
                   class="sample"
-                  style="background:{t.background?.fill ?? t.colors.bg}"
+                  style="background:{sample.background?.fill ?? sample.colors.bg}"
                   onclick={() => pickPreset(name)}
                   aria-label={name}
                 >
-                  <i style="background:{t.colors.card};border-color:{t.colors.line};border-radius:{t.card.radius * 2}px">
-                    <b style="background:{t.colors.accent}"></b>
-                    <u style="background:{t.colors.text}"></u>
-                    <u style="background:{t.colors.dim};width:40%"></u>
+                  <i style="background:{sample.colors.card};border-color:{sample.colors.line};border-radius:{sample.card.radius * 2}px">
+                    <b style="background:{sample.colors.accent}"></b>
+                    <u style="background:{sample.colors.text}"></u>
+                    <u style="background:{sample.colors.dim};width:40%"></u>
                   </i>
                 </button>
                 <span>
                   {name}
-                  {#if own[name]}<button class="x" title="Smazat motiv" onclick={() => removeTheme(name)}>×</button>{/if}
+                  {#if own[name]}<button class="x" title={t('Smazat motiv')} onclick={() => removeTheme(name)}>×</button>{/if}
                 </span>
               </div>
             {/each}
           </div>
           <div class="actions">
-            <button class="btn" onclick={saveAsTheme}>Uložit jako vlastní motiv</button>
-            <button class="btn danger" onclick={reset}>Výchozí nastavení</button>
+            <button class="btn" onclick={saveAsTheme}>{t('Uložit jako vlastní motiv')}</button>
+            <button class="btn danger" onclick={reset}>{t('Výchozí nastavení')}</button>
           </div>
-          <p class="hint">
-            Vlastní motiv si zapamatuje barvy, karty, pozadí i písmo. Pak ho můžeš přiřadit jednotlivým stránkám.
-          </p>
+          <p class="hint">{@html t('Vlastní motiv si zapamatuje barvy, karty, pozadí i písmo. Pak ho můžeš přiřadit jednotlivým stránkám.')}</p>
         {:else if tab === 'colors'}
-          <h2>Barvy</h2>
+          <h2>{t('Barvy')}</h2>
           {#each colorRows as [key, name] (key)}
             {@const custom = typeof cfg.theme === 'object' && cfg.theme?.colors?.[key] !== undefined}
             <label class="row">
               <span>{name}</span>
               <input type="color" value={hex6(look.colors[key])} oninput={(e) => setColor(key, str(e))} />
               <input class="code" type="text" value={look.colors[key]} onchange={(e) => setColor(key, str(e))} />
-              <button class="x" disabled={!custom} title="Vrátit barvu motivu" onclick={() => setColor(key, null)}>↺</button>
+              <button class="x" disabled={!custom} title={t('Vrátit barvu motivu')} onclick={() => setColor(key, null)}>↺</button>
             </label>
           {/each}
         {:else if tab === 'cards'}
-          <h2>Karty</h2>
-          {@render slider('Zaoblení', look.card.radius, 0, 9, 0.2, (v) => setCard('radius', v))}
-          {@render slider('Průhlednost', 1 - look.card.opacity, 0, 1, 0.05, (v) => setCard('opacity', Math.round((1 - v) * 100) / 100))}
-          {@render slider('Matné sklo', look.card.blur, 0, 6, 0.5, (v) => setCard('blur', v))}
-          {@render slider('Mezery', look.gap, 0, 5, 0.25, (v) => (theme().gap = v))}
+          <h2>{t('Karty')}</h2>
+          {@render slider(t('Zaoblení'), look.card.radius, 0, 9, 0.2, (v) => setCard('radius', v))}
+          {@render slider(t('Průhlednost'), 1 - look.card.opacity, 0, 1, 0.05, (v) => setCard('opacity', Math.round((1 - v) * 100) / 100))}
+          {@render slider(t('Matné sklo'), look.card.blur, 0, 6, 0.5, (v) => setCard('blur', v))}
+          {@render slider(t('Mezery'), look.gap, 0, 5, 0.25, (v) => (theme().gap = v))}
           <label class="row">
-            <span>Okraj</span>
+            <span>{t('Okraj')}</span>
             <input type="checkbox" checked={look.card.border} onchange={(e) => setCard('border', on(e))} />
           </label>
           <label class="row">
-            <span>Hloubka (lesk a stín)</span>
+            <span>{t('Hloubka (lesk a stín)')}</span>
             <input type="checkbox" checked={look.card.depth} onchange={(e) => setCard('depth', on(e))} />
           </label>
           <label class="row">
-            <span>Tečky stránek</span>
+            <span>{t('Tečky stránek')}</span>
             <input type="checkbox" checked={cfg.dots !== false} onchange={(e) => (cfg!.dots = on(e))} />
           </label>
-          <p class="hint">Matné sklo je vidět jen u průhledných karet nad tapetou.</p>
+          <p class="hint">{@html t('Matné sklo je vidět jen u průhledných karet nad tapetou.')}</p>
         {:else if tab === 'wall'}
-          <h2>Pozadí</h2>
+          <h2>{t('Pozadí')}</h2>
           <div class="walls">
-            <button class="wall none" class:on={!look.background?.image} onclick={() => setWall('image', undefined)}>Žádné</button>
+            <button class="wall none" class:on={!look.background?.image} onclick={() => setWall('image', undefined)}>{t('Žádné')}</button>
             {#each images as file (file.name)}
               <button
                 class="wall"
@@ -954,23 +953,23 @@
               ></button>
             {/each}
             <label class="wall add">
-              + Nahrát
+              {t('+ Nahrát')}
               <input type="file" accept="image/*" onchange={(e) => upload(e, pickWall)} />
             </label>
           </div>
           <label class="row">
-            <span>Umístění</span>
+            <span>{t('Umístění')}</span>
             <select value={look.background?.fit ?? 'cover'} onchange={(e) => setWall('fit', str(e) as Background['fit'])}>
-              <option value="cover">Vyplnit</option>
-              <option value="contain">Přizpůsobit</option>
-              <option value="stretch">Roztáhnout</option>
-              <option value="tile">Dlaždice</option>
+              <option value="cover">{t('Vyplnit')}</option>
+              <option value="contain">{t('Přizpůsobit')}</option>
+              <option value="stretch">{t('Roztáhnout')}</option>
+              <option value="tile">{t('Dlaždice')}</option>
             </select>
           </label>
-          {@render slider('Ztmavení', look.background?.dim ?? 0, 0, 0.9, 0.05, (v) => setWall('dim', v))}
-          {@render slider('Rozostření', look.background?.blur ?? 0, 0, 8, 0.5, (v) => setWall('blur', v))}
+          {@render slider(t('Ztmavení'), look.background?.dim ?? 0, 0, 0.9, 0.05, (v) => setWall('dim', v))}
+          {@render slider(t('Rozostření'), look.background?.blur ?? 0, 0, 8, 0.5, (v) => setWall('blur', v))}
           <label class="row">
-            <span>Barva / přechod</span>
+            <span>{t('Barva / přechod')}</span>
             <input
               class="wide"
               type="text"
@@ -979,11 +978,11 @@
               onchange={(e) => setWall('fill', str(e))}
             />
           </label>
-          <p class="hint">Obrázky se ukládají do složky <code>assets</code> vedle nastavení. K tapetě se hodí průhledné karty (záložka Karty).</p>
+          <p class="hint">{@html t('Obrázky se ukládají do složky <code>assets</code> vedle nastavení. K tapetě se hodí průhledné karty (záložka Karty).')}</p>
         {:else if tab === 'font'}
-          <h2>Písmo</h2>
+          <h2>{t('Písmo')}</h2>
           <label class="row">
-            <span>Styl</span>
+            <span>{t('Styl')}</span>
             <select value={look.font.family ?? ''} onchange={(e) => setFont('family', str(e))}>
               {#each fontChoices as [value, name] (value)}
                 <option {value}>{name}</option>
@@ -994,41 +993,41 @@
             </select>
           </label>
           <label class="row">
-            <span>Vlastní soubor</span>
+            <span>{t('Vlastní soubor')}</span>
             <select value={look.font.file ?? ''} onchange={(e) => setFont('file', str(e))}>
-              <option value="">Žádný</option>
+              <option value="">{t('Žádný')}</option>
               {#each fonts as file (file.name)}
                 <option value={file.name}>{file.name}</option>
               {/each}
             </select>
             <label class="btn">
-              Nahrát
+              {t('Nahrát')}
               <input type="file" accept=".ttf,.otf,.woff,.woff2" onchange={(e) => upload(e, (name) => setFont('file', name))} />
             </label>
           </label>
-          <p class="hint">Vlastní soubor (.ttf, .otf, .woff, .woff2) má přednost před stylem.</p>
+          <p class="hint">{@html t('Vlastní soubor (.ttf, .otf, .woff, .woff2) má přednost před stylem.')}</p>
         {:else if tab === 'pages'}
-          <h2>Stránky</h2>
+          <h2>{t('Stránky')}</h2>
           {#each cfg.pages as page (page.id)}
             <fieldset>
               <label class="row">
-                <span>Název</span>
+                <span>{t('Název')}</span>
                 <input class="wide" type="text" value={page.name} onchange={(e) => (page.name = str(e))} />
               </label>
               <label class="row">
-                <span>Motiv</span>
+                <span>{t('Motiv')}</span>
                 <select value={typeof page.theme === 'string' ? page.theme : ''} onchange={(e) => setPageTheme(page, str(e))}>
-                  <option value="">Jako ostatní</option>
+                  <option value="">{t('Jako ostatní')}</option>
                   {#each themeNames as name (name)}
                     <option value={name}>{name}</option>
                   {/each}
                 </select>
               </label>
               <label class="row">
-                <span>Tapeta</span>
+                <span>{t('Tapeta')}</span>
                 <select value={pageWall(page)} onchange={(e) => setPageWall(page, str(e))}>
-                  <option value="">Jako ostatní</option>
-                  <option value="-">Žádná</option>
+                  <option value="">{t('Jako ostatní')}</option>
+                  <option value="-">{t('Žádná')}</option>
                   {#each images as file (file.name)}
                     <option value={file.name}>{file.name}</option>
                   {/each}
@@ -1037,10 +1036,10 @@
             </fieldset>
           {/each}
         {:else if tab === 'keys'}
-          <h2>Tlačítka</h2>
+          <h2>{t('Tlačítka')}</h2>
           {#if deck}
             <label class="row">
-              <span>Panel</span>
+              <span>{t('Panel')}</span>
               <select
                 value={String(Math.min(deckIndex, decks.length - 1))}
                 onchange={(e) => {
@@ -1054,16 +1053,16 @@
               </select>
             </label>
             <label class="row">
-              <span>Vzhled</span>
+              <span>{t('Vzhled')}</span>
               <select value={deck.config?.look ?? 'icon'} onchange={(e) => (deckConfig().look = str(e))}>
                 {#each looks as [value, name] (value)}
                   <option {value}>{name}</option>
                 {/each}
               </select>
             </label>
-            {@render slider('Sloupce', deck.config?.cols ?? 6, 1, 8, 1, (v) => (deckConfig().cols = v))}
+            {@render slider(t('Sloupce'), deck.config?.cols ?? 6, 1, 8, 1, (v) => (deckConfig().cols = v))}
             <label class="row">
-              <span>Popisky</span>
+              <span>{t('Popisky')}</span>
               <input type="checkbox" checked={deck.config?.labels !== false} onchange={(e) => (deckConfig().labels = on(e))} />
             </label>
 
@@ -1080,65 +1079,65 @@
                   {/if}
                 </button>
               {/each}
-              <button class="keycap add" onclick={addKey} title="Přidat tlačítko">+</button>
+              <button class="keycap add" onclick={addKey} title={t('Přidat tlačítko')}>+</button>
             </div>
 
             {#if key}
               <fieldset>
                 <div class="actions">
-                  <button class="btn" onclick={() => moveKey(-1)} disabled={picked === 0}>← Posunout</button>
-                  <button class="btn" onclick={() => moveKey(1)} disabled={picked >= keys.length - 1}>Posunout →</button>
-                  <button class="btn danger" onclick={removeKey}>Smazat</button>
+                  <button class="btn" onclick={() => moveKey(-1)} disabled={picked === 0}>{t('← Posunout')}</button>
+                  <button class="btn" onclick={() => moveKey(1)} disabled={picked >= keys.length - 1}>{t('Posunout →')}</button>
+                  <button class="btn danger" onclick={removeKey}>{t('Smazat')}</button>
                 </div>
                 <label class="row">
-                  <span>Popisek</span>
+                  <span>{t('Popisek')}</span>
                   <input class="wide" type="text" value={key.label} oninput={(e) => (key.label = str(e))} />
                 </label>
                 <label class="row">
-                  <span>Velký text</span>
-                  <input class="wide" type="text" placeholder="např. BRB nebo 1" value={key.text ?? ''} oninput={(e) => setKey('text', str(e))} />
+                  <span>{t('Velký text')}</span>
+                  <input class="wide" type="text" placeholder={t('např. BRB nebo 1')} value={key.text ?? ''} oninput={(e) => setKey('text', str(e))} />
                 </label>
                 <label class="row">
-                  <span>Nadpisek</span>
-                  <input class="wide" type="text" placeholder="např. SCENE" value={key.caption ?? ''} oninput={(e) => setKey('caption', str(e))} />
+                  <span>{t('Nadpisek')}</span>
+                  <input class="wide" type="text" placeholder={t('např. SCENE')} value={key.caption ?? ''} oninput={(e) => setKey('caption', str(e))} />
                 </label>
                 <label class="row">
-                  <span>Vzhled</span>
+                  <span>{t('Vzhled')}</span>
                   <select value={key.look ?? ''} onchange={(e) => setKey('look', str(e) as KeyLook)}>
-                    <option value="">Podle panelu</option>
+                    <option value="">{t('Podle panelu')}</option>
                     {#each looks as [value, name] (value)}
                       <option {value}>{name}</option>
                     {/each}
                   </select>
                 </label>
                 <div class="row top">
-                  <span>Barva</span>
+                  <span>{t('Barva')}</span>
                   {@render swatches(key.color, (v) => setKey('color', v))}
                 </div>
                 <label class="row">
-                  <span>Tečka</span>
+                  <span>{t('Tečka')}</span>
                   <select value={key.dot ?? ''} onchange={(e) => setKey('dot', str(e))}>
-                    <option value="">Žádná</option>
+                    <option value="">{t('Žádná')}</option>
                     {#each Object.keys(palette) as name (name)}
                       <option value={name}>{name}</option>
                     {/each}
                   </select>
                 </label>
                 <label class="row">
-                  <span>Obrázek</span>
+                  <span>{t('Obrázek')}</span>
                   <select value={key.image ?? ''} onchange={(e) => setKey('image', str(e))}>
-                    <option value="">Žádný (ikona)</option>
+                    <option value="">{t('Žádný (ikona)')}</option>
                     {#each images as file (file.name)}
                       <option value={file.name}>{file.name}</option>
                     {/each}
                   </select>
                   <label class="btn">
-                    Nahrát
+                    {t('Nahrát')}
                     <input type="file" accept="image/*" onchange={(e) => upload(e, (name) => setKey('image', name))} />
                   </label>
                 </label>
                 <div class="row top">
-                  <span>Ikona</span>
+                  <span>{t('Ikona')}</span>
                   <div class="icons">
                     {#each iconNames as name (name)}
                       {@const Icon = icons[name]}
@@ -1149,9 +1148,9 @@
                   </div>
                 </div>
 
-                <h3>Co tlačítko udělá</h3>
+                <h3>{t('Co tlačítko udělá')}</h3>
                 <label class="row">
-                  <span>Akce</span>
+                  <span>{t('Akce')}</span>
                   <select value={key.action.do} onchange={(e) => setActionKind(str(e) as Action['do'])}>
                     {#each actionKinds as [value, name] (value)}
                       <option {value}>{name}</option>
@@ -1161,11 +1160,11 @@
                 {#if key.action.do === 'launch'}
                   {@const a = key.action}
                   <label class="row">
-                    <span>Cíl</span>
-                    <input class="wide" type="text" placeholder="program, soubor, https://… nebo spotify:" value={a.target} onchange={(e) => (a.target = str(e))} />
+                    <span>{t('Cíl')}</span>
+                    <input class="wide" type="text" placeholder={t('program, soubor, https://… nebo spotify:')} value={a.target} onchange={(e) => (a.target = str(e))} />
                   </label>
                   <label class="row">
-                    <span>Parametry</span>
+                    <span>{t('Parametry')}</span>
                     <input
                       class="wide"
                       type="text"
@@ -1179,98 +1178,88 @@
                 {:else if key.action.do === 'keys'}
                   {@const a = key.action}
                   <label class="row">
-                    <span>Zkratka</span>
+                    <span>{t('Zkratka')}</span>
                     <input class="wide" type="text" placeholder="ctrl+shift+esc" value={a.combo} onchange={(e) => (a.combo = str(e))} />
                   </label>
                 {:else if key.action.do === 'audio.set_volume'}
                   {@const a = key.action}
-                  {@render slider('Hlasitost', Math.round(a.level * 100), 0, 100, 5, (v) => (a.level = v / 100), ' %')}
+                  {@render slider(t('Hlasitost'), Math.round(a.level * 100), 0, 100, 5, (v) => (a.level = v / 100), ' %')}
                 {/if}
               </fieldset>
             {/if}
           {:else}
-            <p class="hint">V nastavení není žádný panel tlačítek.</p>
+            <p class="hint">{@html t('V nastavení není žádný panel tlačítek.')}</p>
           {/if}
         {:else if tab === 'link'}
-          <h2>Připojení</h2>
-          <h3>Kabelem</h3>
-          <p class="hint first">
-            Zapni na telefonu <code>Možnosti pro vývojáře → Ladění USB</code> a připoj ho. Dashboard se otevře sám, párovat není třeba.
-          </p>
+          <h2>{t('Připojení')}</h2>
+          <h3>{t('Kabelem')}</h3>
+          <p class="hint first">{@html t('Zapni na telefonu <code>Možnosti pro vývojáře → Ladění USB</code> a připoj ho. Dashboard se otevře sám, párovat není třeba.')}</p>
 
-          <h3>Přes Wi-Fi</h3>
+          <h3>{t('Přes Wi-Fi')}</h3>
           <label class="row">
-            <span>Povolit Wi-Fi</span>
+            <span>{t('Povolit Wi-Fi')}</span>
             <input type="checkbox" checked={cfg.wireless === true} onchange={(e) => (cfg!.wireless = on(e))} />
           </label>
           {#if cfg.wireless}
             {#if pairing?.address && pairing.qr}
               <div class="qr">{@html pairing.qr}</div>
-              <p class="hint center">
-                Naskenuj fotoaparátem telefonu. Telefon musí být ve stejné síti jako počítač.
-              </p>
+              <p class="hint center">{@html t('Naskenuj fotoaparátem telefonu. Telefon musí být ve stejné síti jako počítač.')}</p>
               <label class="row">
-                <span>Adresa</span>
+                <span>{t('Adresa')}</span>
                 <input class="wide code" style="margin-left:0" type="text" readonly value={pairing.url ?? ''} />
               </label>
               <div class="actions">
-                <button class="btn" onclick={() => loadLink(true)}>Nový kód</button>
-                <span class="state" style="align-self:center;margin-left:12px">platí ještě {Math.ceil(pairing.seconds / 60)} min, na jedno použití</span>
+                <button class="btn" onclick={() => loadLink(true)}>{t('Nový kód')}</button>
+                <span class="state" style="align-self:center;margin-left:12px">{t('platí ještě {n} min, na jedno použití', { n: Math.ceil(pairing.seconds / 60) })}</span>
               </div>
             {:else if pairing && !pairing.address}
-              <p class="problem" style="margin:12px 0 0">
-                Počítač není v místní síti (nemá soukromou adresu), takže se k němu telefon přes Wi-Fi nedostane.
-              </p>
+              <p class="problem" style="margin:12px 0 0">{@html t('Počítač není v místní síti (nemá soukromou adresu), takže se k němu telefon přes Wi-Fi nedostane.')}</p>
             {:else}
-              <p class="hint">Připravuji kód…</p>
+              <p class="hint">{@html t('Připravuji kód…')}</p>
             {/if}
 
-            <h3>Spárované telefony</h3>
+            <h3>{t('Spárované telefony')}</h3>
             {#each paired as device (device.id)}
               <div class="row">
                 <span style="flex:1">{device.name}</span>
-                <output style="flex:none">{new Date(device.created).toLocaleDateString('cs')}</output>
-                <button class="x" title="Zrušit spárování" onclick={() => forget(device)}>×</button>
+                <output style="flex:none">{new Date(device.created).toLocaleDateString(language())}</output>
+                <button class="x" title={t('Zrušit spárování')} onclick={() => forget(device)}>×</button>
               </div>
             {:else}
-              <p class="hint first">Zatím žádný.</p>
+              <p class="hint first">{@html t('Zatím žádný.')}</p>
             {/each}
 
-            <p class="hint">
-              Windows se při prvním zapnutí zeptá, jestli má StreamPhone povolit v síti: povol ho pro <strong>soukromé</strong> sítě.
-              Bez spárování se k tlačítkům nikdo ze sítě nedostane. Spojení ale není šifrované, takže Wi-Fi používej jen v síti,
-              které věříš (doma), ne na veřejné.
-            </p>
+            <p class="hint">{@html t('Windows se při prvním zapnutí zeptá, jestli má StreamPhone povolit v síti: povol ho pro <strong>soukromé</strong> sítě. Bez spárování se k tlačítkům nikdo ze sítě nedostane. Spojení ale není šifrované, takže Wi-Fi používej jen v síti, které věříš (doma), ne na veřejné.')}</p>
           {/if}
         {:else if tab === 'night'}
-          <h2>Noční režim</h2>
+          <h2>{t('Noční režim')}</h2>
           <label class="row">
-            <span>Zapnuto</span>
+            <span>{t('Zapnuto')}</span>
             <input type="checkbox" checked={cfg.night?.enabled === true} onchange={(e) => setNight('enabled', on(e))} />
           </label>
           <label class="row">
-            <span>Od</span>
+            <span>{t('Od')}</span>
             <input class="wide" type="time" value={cfg.night?.from ?? '22:00'} onchange={(e) => setNight('from', str(e))} />
           </label>
           <label class="row">
-            <span>Do</span>
+            <span>{t('Do')}</span>
             <input class="wide" type="time" value={cfg.night?.to ?? '07:00'} onchange={(e) => setNight('to', str(e))} />
           </label>
-          {@render slider('Ztmavení', cfg.night?.dim ?? 0.5, 0, 0.95, 0.05, (v) => setNight('dim', v))}
+          {@render slider(t('Ztmavení'), cfg.night?.dim ?? 0.5, 0, 0.95, 0.05, (v) => setNight('dim', v))}
           <label class="row">
-            <span>Jen červené světlo</span>
+            <span>{t('Jen červené světlo')}</span>
             <input type="checkbox" checked={cfg.night?.red === true} onchange={(e) => setNight('red', on(e))} />
           </label>
           <label class="row">
-            <span>Přepnout na stránku</span>
+            <span>{t('Přepnout na stránku')}</span>
             <select value={cfg.night?.page ?? ''} onchange={(e) => setNight('page', str(e))}>
-              <option value="">Nepřepínat</option>
+              <option value="">{t('Nepřepínat')}</option>
               {#each cfg.pages as pg (pg.id)}
                 <option value={pg.id}>{pg.name}</option>
               {/each}
             </select>
           </label>
-          <p class="hint">V nastaveném čase dashboard ztmavne, třeba pro telefon na nočním stolku. Chceš-li si ho hned prohlédnout, nastav rozsah tak, aby zahrnoval aktuální čas.</p>
+          <p class="hint">{@html t('V nastaveném čase dashboard ztmavne, třeba pro telefon na nočním stolku. Chceš-li si ho hned prohlédnout, nastav rozsah tak, aby zahrnoval aktuální čas.')}</p>
         {/if}
       </div>
     {/if}
@@ -1279,7 +1268,7 @@
   <main>
     {#if cfg}
       <div class="phone" bind:clientWidth={phoneW} bind:clientHeight={phoneH}>
-        <iframe title="Náhled telefonu" src="http://localhost:{cfg.port}/" bind:this={frame} onload={() => tab === 'layout' && showPage()}></iframe>
+        <iframe title={t('Náhled telefonu')} src="http://127.0.0.1:{dashboardPort ?? cfg.port}/" bind:this={frame} onload={() => tab === 'layout' && showPage()}></iframe>
         {#if tab === 'layout' && page && phoneH}
           <Layout
             {page}
@@ -1293,7 +1282,7 @@
           />
         {/if}
       </div>
-      <p class="hint center">Živý náhled. Změny se ukládají samy a na připojeném telefonu se projeví hned.</p>
+      <p class="hint center">{@html t('Živý náhled. Změny se ukládají samy a na připojeném telefonu se projeví hned.')}</p>
     {/if}
   </main>
 </div>
@@ -1332,6 +1321,12 @@
     align-items: baseline;
     justify-content: space-between;
     padding: 20px 22px 8px;
+  }
+  .language {
+    flex: 0 1 150px;
+    margin: 0 10px 0 auto;
+    padding: 4px 6px;
+    font-size: 12px;
   }
   h1 {
     margin: 0;
@@ -1521,7 +1516,7 @@
   .hint.center {
     text-align: center;
   }
-  code {
+  .pane :global(code) {
     font-family: ui-monospace, Consolas, monospace;
     color: #c7c7cc;
   }

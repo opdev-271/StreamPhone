@@ -15,3 +15,6 @@ ui/dist/
 config.json
 config.backup.json
 todos.json
+
+# Built installers and APKs of this version (published as GitHub releases instead)
+/vydani/

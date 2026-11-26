@@ -1,0 +1,7 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "The window shows the editor the agent serves on localhost. It is ordinary web content and gets no access to the app's native commands.",
+  "windows": ["problem"],
+  "permissions": []
+}

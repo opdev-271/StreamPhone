@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { number } from '../i18n.svelte';
+  import { t } from '../strings';
   import { untrack } from 'svelte';
   import { ArrowDown, ArrowUp } from '@lucide/svelte';
   import { conn } from '../conn.svelte';
@@ -24,12 +26,12 @@
   );
   const area = $derived(history.length > 1 ? `0,30 ${line} ${((history.length - 1) / 59) * 100},30` : '');
 
-  const gb = (bytes: number) => (bytes / 1073741824).toFixed(1).replace('.', ',');
+  const gb = (bytes: number) => number(bytes / 1073741824, 1);
 
   function rate(bytesPerSec: number) {
     const kb = bytesPerSec / 1024;
     if (kb < 1000) return `${Math.round(kb)} kB/s`;
-    return `${(kb / 1024).toFixed(1).replace('.', ',')} MB/s`;
+    return `${number(kb / 1024, 1)} MB/s`;
   }
 
   const level = (pct: number) => (pct > 90 ? 'var(--bad)' : pct > 70 ? 'var(--warn)' : 'var(--ok)');
@@ -42,7 +44,7 @@
 </script>
 
 <div class="card sys">
-  <div class="label">Počítač</div>
+  <div class="label">{t('Počítač')}</div>
   {#if stats}
     <div class="rings">
       {#each [{ name: 'CPU', pct: stats.cpu }, { name: 'RAM', pct: memPct }] as r (r.name)}
@@ -78,7 +80,7 @@
       <span class="net"><ArrowUp size="2.8vmin" strokeWidth={2.6} />{rate(stats.netTx)}</span>
     </div>
   {:else}
-    <div class="dim">Načítám…</div>
+    <div class="dim">{t('Načítám…')}</div>
   {/if}
 </div>
 

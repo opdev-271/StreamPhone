@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from './strings';
   import { conn } from './conn.svelte';
 
   let now = $state(new Date());
@@ -15,10 +16,10 @@
 <div class="offline">
   <div class="time">{time}</div>
   {#if conn.status === 'unpaired'}
-    <div class="hint"><span class="pulse stop"></span>Telefon není spárovaný</div>
-    <div class="how">Na počítači otevři editor StreamPhone, záložku Připojení, a naskenuj QR kód.</div>
+    <div class="hint"><span class="pulse stop"></span>{t('Telefon není spárovaný')}</div>
+    <div class="how">{t('Na počítači otevři editor StreamPhone, záložku Připojení, a naskenuj QR kód.')}</div>
   {:else}
-    <div class="hint"><span class="pulse"></span>Čekám na počítač…</div>
+    <div class="hint"><span class="pulse"></span>{t('Čekám na počítač…')}</div>
   {/if}
 </div>
 

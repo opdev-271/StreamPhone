@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="color-scheme" content="dark" />
+    <title>StreamPhone</title>
+    <style>
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        background: #0b0b0d;
+        color: #f5f5f7;
+        font: 15px/1.5 'Segoe UI', system-ui, sans-serif;
+      }
+      body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      main {
+        max-width: 460px;
+        padding: 24px;
+        text-align: center;
+      }
+      h1 {
+        margin: 0 0 10px;
+        font-size: 22px;
+        font-weight: 650;
+      }
+      p {
+        margin: 8px 0;
+        color: #a1a1a8;
+      }
+      code {
+        color: #f5f5f7;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Shown only when the agent could not start; otherwise the window opens the editor directly. -->
+    <main>
+      <h1 id="title">StreamPhone could not start</h1>
+      <p id="why">Port <code>47800</code> or <code>47801</code> is used by another program, most often an older StreamPhone started from the command line.</p>
+      <p id="what">Close it and start StreamPhone again. You quit the app from its icon in the notification area.</p>
+    </main>
+    <script>
+      const texts = {
+        cs: ['StreamPhone se nepodařilo spustit', 'Port <code>47800</code> nebo <code>47801</code> už používá jiný program, nejčastěji starší StreamPhone spuštěný z příkazové řádky.', 'Ukonči ho a spusť StreamPhone znovu. Aplikaci zavřeš přes ikonu v oznamovací oblasti.'],
+        sk: ['StreamPhone sa nepodarilo spustiť', 'Port <code>47800</code> alebo <code>47801</code> už používa iný program, najčastejšie starší StreamPhone spustený z príkazového riadka.', 'Ukonči ho a spusti StreamPhone znova. Aplikáciu zavrieš cez ikonu v oznamovacej oblasti.'],
+        de: ['StreamPhone konnte nicht starten', 'Port <code>47800</code> oder <code>47801</code> wird von einem anderen Programm verwendet, meist einem älteren StreamPhone aus der Kommandozeile.', 'Beende es und starte StreamPhone erneut. Die App beendest du über ihr Symbol im Infobereich.'],
+        pl: ['Nie udało się uruchomić StreamPhone', 'Port <code>47800</code> lub <code>47801</code> jest zajęty przez inny program, najczęściej starszy StreamPhone uruchomiony z wiersza poleceń.', 'Zamknij go i uruchom StreamPhone ponownie. Aplikację zamkniesz ikoną w obszarze powiadomień.'],
+        es: ['StreamPhone no pudo iniciarse', 'El puerto <code>47800</code> o <code>47801</code> lo usa otro programa, casi siempre un StreamPhone antiguo iniciado desde la línea de comandos.', 'Ciérralo e inicia StreamPhone de nuevo. La aplicación se cierra desde su icono en el área de notificación.'],
+        fr: ["StreamPhone n'a pas pu démarrer", "Le port <code>47800</code> ou <code>47801</code> est utilisé par un autre programme, le plus souvent un ancien StreamPhone lancé en ligne de commande.", "Fermez-le et relancez StreamPhone. L'application se quitte depuis son icône dans la zone de notification."],
+      };
+      const found = (navigator.languages || [navigator.language]).map((code) => code.slice(0, 2).toLowerCase()).find((code) => texts[code]);
+      if (found) {
+        ['title', 'why', 'what'].forEach((id, i) => (document.getElementById(id).innerHTML = texts[found][i]));
+        document.documentElement.lang = found;
+      }
+    </script>
+  </body>
+</html>

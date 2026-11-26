@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from '../strings';
   import { Check, X } from '@lucide/svelte';
   import { buzz, conn } from '../conn.svelte';
   import type { AiSessions, WidgetDef } from '../types';
@@ -10,7 +11,7 @@
   const data = $derived(conn.data['ai.sessions'] as AiSessions | undefined);
   const sessions = $derived(data?.sessions ?? []);
   const canAnswer = $derived(def.config?.approve !== false);
-  const title = $derived((def.config?.title as string) || 'AI relace');
+  const title = $derived((def.config?.title as string) || t('AI relace'));
 
   const tools: Record<string, string> = {
     claude: 'Claude',
@@ -23,6 +24,7 @@
   };
   const toolName = (source: string) => tools[source] ?? source;
 
+  // Looked up when shown, so the texts follow a language change.
   const labels = { idle: 'Připraveno', working: 'Pracuje', waiting: 'Čeká na tebe', done: 'Hotovo' };
 
   // "před 3 min": refreshed twice a minute.
@@ -33,7 +35,7 @@
   });
   function ago(at: number) {
     const min = Math.floor(Math.max(0, now - at) / 60000);
-    if (min < 1) return 'teď';
+    if (min < 1) return t('teď');
     if (min < 60) return `${min} min`;
     return `${Math.floor(min / 60)} h`;
   }
@@ -77,9 +79,9 @@
       <div class="session {s.status}" class:asking={!!s.request}>
         <div class="line">
           <i class="state"></i>
-          <span class="project">{s.project || 'Relace'}</span>
+          <span class="project">{s.project || t('Relace')}</span>
           <span class="tool-tag {s.source}">{toolName(s.source)}</span>
-          <span class="status">{labels[s.status]}</span>
+          <span class="status">{t(labels[s.status])}</span>
           <span class="when">{ago(s.updatedAt)}</span>
         </div>
         {#if s.title}
@@ -95,10 +97,10 @@
             {#if canAnswer}
               <div class="buttons">
                 <button class="deny" disabled={sent === s.request.id} onclick={() => decide(s.request!.id, false)}>
-                  <X size="4vmin" strokeWidth={2.8} />Zamítnout
+                  <X size="4vmin" strokeWidth={2.8} />{t('Zamítnout')}
                 </button>
                 <button class="allow" disabled={sent === s.request.id} onclick={() => decide(s.request!.id, true)}>
-                  <Check size="4vmin" strokeWidth={2.8} />Povolit
+                  <Check size="4vmin" strokeWidth={2.8} />{t('Povolit')}
                 </button>
               </div>
             {/if}
@@ -108,7 +110,7 @@
         {/if}
       </div>
     {:else}
-      <div class="empty">Žádná relace neběží</div>
+      <div class="empty">{t('Žádná relace neběží')}</div>
     {/each}
   </div>
 </div>

@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { PageDef, WidgetDef } from '../lib/types';
+  import { t } from './strings';
 
   export type Rect = { x: number; y: number; w: number; h: number };
 
@@ -92,7 +93,7 @@
     >
       <span>{names[w.type] ?? w.type}</span>
       <small>{w.w} × {w.h}</small>
-      <b class="grip" title="Změnit velikost" onpointerdown={(e) => down(e, w, true)} onpointermove={move} onpointerup={up} onpointercancel={up}
+      <b class="grip" title={t('Změnit velikost')} onpointerdown={(e) => down(e, w, true)} onpointermove={move} onpointerup={up} onpointercancel={up}
       ></b>
     </div>
   {/each}

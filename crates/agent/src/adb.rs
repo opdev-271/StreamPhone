@@ -14,6 +14,9 @@ use crate::App;
 
 pub const DEVICES: &str = "agent.devices";
 
+/// Package name of the Android app (see `android/`).
+const APP: &str = "app.streamphone";
+
 fn find_adb() -> Option<PathBuf> {
     let exe = if cfg!(windows) { "adb.exe" } else { "adb" };
 
@@ -68,7 +71,7 @@ fn parse_devices(output: &str) -> HashSet<String> {
         .collect()
 }
 
-/// Opens the dashboard in the phone's browser. A phone that is still booting
+/// Opens the dashboard on the phone. A phone that is still booting
 /// (or an emulator that was just started) already answers adb but cannot start
 /// apps yet, so wait for the boot to finish first.
 async fn open_dashboard(path: PathBuf, serial: String, port: u16) {
@@ -79,12 +82,20 @@ async fn open_dashboard(path: PathBuf, serial: String, port: u16) {
             .await
             .is_ok_and(|out| String::from_utf8_lossy(&out.stdout).trim() == "1");
         if booted {
-            let url = format!("http://localhost:{port}/");
-            let opened = adb(&path)
-                .args(["-s", &serial, "shell", "am", "start", "-a", "android.intent.action.VIEW", "-d", &url])
+            // The StreamPhone app if the phone has it, otherwise the browser.
+            let has_app = adb(&path)
+                .args(["-s", &serial, "shell", "pm", "path", APP])
                 .output()
                 .await
-                .is_ok_and(|out| out.status.success());
+                .is_ok_and(|out| out.status.success() && String::from_utf8_lossy(&out.stdout).contains("package:"));
+            let url = format!("http://localhost:{port}/");
+            let component = format!("{APP}/.MainActivity");
+            let start: Vec<&str> = if has_app {
+                vec!["-s", &serial, "shell", "am", "start", "-n", &component]
+            } else {
+                vec!["-s", &serial, "shell", "am", "start", "-a", "android.intent.action.VIEW", "-d", &url]
+            };
+            let opened = adb(&path).args(start).output().await.is_ok_and(|out| out.status.success());
             if opened {
                 return;
             }

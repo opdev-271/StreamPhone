@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="searching">Recherche de l\'ordinateur…</string>
+    <string name="not_found">Ordinateur introuvable</string>
+    <string name="hint">Branchez le téléphone par câble (débogage USB activé) ou associez-le en Wi-Fi : sur l\'ordinateur, ouvrez StreamPhone → Connexion.</string>
+    <string name="scan">Scanner le code QR</string>
+    <string name="type">Saisir l\'adresse</string>
+    <string name="retry">Réessayer</string>
+    <string name="forget">Oublier le Wi-Fi</string>
+    <string name="scan_prompt">Visez le code QR de l\'onglet Connexion</string>
+    <string name="address_title">Adresse de l\'ordinateur</string>
+    <string name="code_hint">Code d\'association (8 caractères)</string>
+    <string name="connect">Connecter</string>
+    <string name="cancel">Annuler</string>
+    <string name="bad_link">Ce n\'est pas un code d\'association StreamPhone.</string>
+    <string name="bad_address">Saisissez l\'adresse de l\'ordinateur sur le réseau local, p. ex. 192.168.0.10.</string>
+    <string name="over_usb">Par câble</string>
+    <string name="over_wifi">Wi-Fi : %1$s</string>
+</resources>

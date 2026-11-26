@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="searching">Buscando el ordenador…</string>
+    <string name="not_found">Ordenador no encontrado</string>
+    <string name="hint">Conecta el teléfono por cable (con la depuración USB activada) o emparéjalo por Wi-Fi: en el ordenador abre StreamPhone → Conexión.</string>
+    <string name="scan">Escanear código QR</string>
+    <string name="type">Escribir dirección</string>
+    <string name="retry">Reintentar</string>
+    <string name="forget">Olvidar Wi-Fi</string>
+    <string name="scan_prompt">Apunta al código QR de la pestaña Conexión</string>
+    <string name="address_title">Dirección del ordenador</string>
+    <string name="code_hint">Código de emparejamiento (8 caracteres)</string>
+    <string name="connect">Conectar</string>
+    <string name="cancel">Cancelar</string>
+    <string name="bad_link">Esto no es un código de emparejamiento de StreamPhone.</string>
+    <string name="bad_address">Escribe la dirección del ordenador en la red local, p. ej. 192.168.0.10.</string>
+    <string name="over_usb">Por cable</string>
+</resources>

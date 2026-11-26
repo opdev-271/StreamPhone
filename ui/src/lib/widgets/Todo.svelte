@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from '../strings';
   import { Check, Plus, X } from '@lucide/svelte';
   import { buzz, conn } from '../conn.svelte';
   import type { TodoItem, WidgetDef } from '../types';
@@ -9,7 +10,7 @@
 
   const items = $derived((conn.data['todo.list'] as TodoItem[] | undefined) ?? []);
   const open = $derived(items.filter((t) => !t.done).length);
-  const title = $derived((def.config?.title as string) || 'Úkoly');
+  const title = $derived((def.config?.title as string) || t('Úkoly'));
 
   let draft = $state('');
 
@@ -42,22 +43,22 @@
   <ul>
     {#each items as item (item.id)}
       <li class:done={item.done}>
-        <button class="tick" aria-label={item.done ? 'Vrátit' : 'Hotovo'} onclick={() => toggle(item.id)}>
+        <button class="tick" aria-label={item.done ? t('Vrátit') : t('Hotovo')} onclick={() => toggle(item.id)}>
           {#if item.done}<Check size="70%" strokeWidth={3.2} />{/if}
         </button>
         <button class="text" onclick={() => toggle(item.id)}>{item.text}</button>
         {#if item.done}
-          <button class="drop" aria-label="Smazat" onclick={() => remove(item.id)}><X size="3.4vmin" strokeWidth={2.4} /></button>
+          <button class="drop" aria-label={t('Smazat')} onclick={() => remove(item.id)}><X size="3.4vmin" strokeWidth={2.4} /></button>
         {/if}
       </li>
     {:else}
-      <li class="empty">Nic na seznamu</li>
+      <li class="empty">{t('Nic na seznamu')}</li>
     {/each}
   </ul>
 
   <form onsubmit={add}>
-    <input type="text" placeholder="Nový úkol" maxlength="200" enterkeyhint="done" bind:value={draft} />
-    <button type="submit" aria-label="Přidat" disabled={!draft.trim()}><Plus size="4.4vmin" strokeWidth={2.6} /></button>
+    <input type="text" placeholder={t('Nový úkol')} maxlength="200" enterkeyhint="done" bind:value={draft} />
+    <button type="submit" aria-label={t('Přidat')} disabled={!draft.trim()}><Plus size="4.4vmin" strokeWidth={2.6} /></button>
   </form>
 </div>
 
