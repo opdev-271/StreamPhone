@@ -1,0 +1,280 @@
+{
+  "port": 47800,
+  "openOnConnect": true,
+  "theme": "midnight",
+  "pages": [
+    {
+      "id": "home",
+      "name": "Domů",
+      "widgets": [
+        {
+          "id": "home-clock",
+          "type": "clock",
+          "x": 0,
+          "y": 0,
+          "w": 4,
+          "h": 4
+        },
+        {
+          "id": "home-media",
+          "type": "media",
+          "x": 4,
+          "y": 0,
+          "w": 5,
+          "h": 4
+        },
+        {
+          "id": "home-system",
+          "type": "system",
+          "x": 9,
+          "y": 0,
+          "w": 3,
+          "h": 4
+        },
+        {
+          "id": "home-deck",
+          "type": "deck",
+          "x": 0,
+          "y": 4,
+          "w": 12,
+          "h": 2,
+          "config": {
+            "cols": 6,
+            "buttons": [
+              {
+                "label": "Terminál",
+                "icon": "terminal",
+                "action": {
+                  "do": "launch",
+                  "target": "wt.exe"
+                },
+                "color": "graphite"
+              },
+              {
+                "label": "VS Code",
+                "icon": "code",
+                "color": "blue",
+                "action": {
+                  "do": "launch",
+                  "target": "%LOCALAPPDATA%\\Programs\\Microsoft VS Code\\Code.exe"
+                }
+              },
+              {
+                "label": "Prohlížeč",
+                "icon": "globe",
+                "action": {
+                  "do": "launch",
+                  "target": "https://www.google.com"
+                },
+                "color": "cyan"
+              },
+              {
+                "label": "Výstřižek",
+                "icon": "scissors",
+                "action": {
+                  "do": "launch",
+                  "target": "ms-screenclip:"
+                },
+                "color": "purple"
+              },
+              {
+                "label": "Ztlumit",
+                "icon": "mute",
+                "color": "orange",
+                "action": {
+                  "do": "audio.mute_toggle"
+                }
+              },
+              {
+                "label": "Zamknout",
+                "icon": "lock",
+                "color": "red",
+                "action": {
+                  "do": "system.lock"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "work",
+      "name": "Práce",
+      "widgets": [
+        {
+          "id": "work-timer",
+          "type": "timer",
+          "x": 0,
+          "y": 0,
+          "w": 3,
+          "h": 6
+        },
+        {
+          "id": "work-todo",
+          "type": "todo",
+          "x": 3,
+          "y": 0,
+          "w": 4,
+          "h": 6
+        },
+        {
+          "id": "work-processes",
+          "type": "processes",
+          "x": 7,
+          "y": 0,
+          "w": 5,
+          "h": 3
+        },
+        {
+          "id": "work-calendar",
+          "type": "calendar",
+          "x": 7,
+          "y": 3,
+          "w": 5,
+          "h": 3
+        }
+      ]
+    },
+    {
+      "id": "deck",
+      "name": "Deck",
+      "widgets": [
+        {
+          "id": "deck-main",
+          "type": "deck",
+          "x": 0,
+          "y": 0,
+          "w": 12,
+          "h": 6,
+          "config": {
+            "cols": 4,
+            "buttons": [
+              {
+                "label": "Terminál",
+                "icon": "terminal",
+                "action": {
+                  "do": "launch",
+                  "target": "wt.exe"
+                },
+                "color": "graphite"
+              },
+              {
+                "label": "VS Code",
+                "icon": "code",
+                "color": "blue",
+                "action": {
+                  "do": "launch",
+                  "target": "%LOCALAPPDATA%\\Programs\\Microsoft VS Code\\Code.exe"
+                }
+              },
+              {
+                "label": "Prohlížeč",
+                "icon": "globe",
+                "action": {
+                  "do": "launch",
+                  "target": "https://www.google.com"
+                },
+                "color": "cyan"
+              },
+              {
+                "label": "Soubory",
+                "icon": "folder",
+                "color": "yellow",
+                "action": {
+                  "do": "launch",
+                  "target": "explorer.exe"
+                }
+              },
+              {
+                "label": "Spotify",
+                "icon": "music",
+                "color": "green",
+                "action": {
+                  "do": "launch",
+                  "target": "spotify:"
+                }
+              },
+              {
+                "label": "Výstřižek",
+                "icon": "scissors",
+                "action": {
+                  "do": "launch",
+                  "target": "ms-screenclip:"
+                },
+                "color": "purple"
+              },
+              {
+                "label": "Správce úloh",
+                "icon": "activity",
+                "action": {
+                  "do": "keys",
+                  "combo": "ctrl+shift+esc"
+                },
+                "color": "mint"
+              },
+              {
+                "label": "Nastavení",
+                "icon": "settings",
+                "action": {
+                  "do": "launch",
+                  "target": "ms-settings:"
+                },
+                "color": "gray"
+              },
+              {
+                "label": "Přehrát / pauza",
+                "icon": "play",
+                "color": "pink",
+                "action": {
+                  "do": "media.play_pause"
+                }
+              },
+              {
+                "label": "Ztlumit",
+                "icon": "mute",
+                "color": "orange",
+                "action": {
+                  "do": "audio.mute_toggle"
+                }
+              },
+              {
+                "label": "Vypnout displej",
+                "icon": "moon",
+                "color": "indigo",
+                "action": {
+                  "do": "display.off"
+                }
+              },
+              {
+                "label": "Zamknout",
+                "icon": "lock",
+                "color": "red",
+                "action": {
+                  "do": "system.lock"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "clock",
+      "name": "Hodiny",
+      "widgets": [
+        {
+          "id": "clock-big",
+          "type": "clock",
+          "x": 0,
+          "y": 0,
+          "w": 12,
+          "h": 6,
+          "config": {
+            "seconds": false
+          }
+        }
+      ]
+    }
+  ]
+}

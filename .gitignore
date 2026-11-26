@@ -1,0 +1,17 @@
+# Build output
+target/
+node_modules/
+ui/dist/
+
+# Local files that do not belong in the repository
+*.mp4
+*.log
+.DS_Store
+.claude/
+.vscode/
+.idea/
+
+# Never commit a personal config or its secrets
+config.json
+config.backup.json
+todos.json
