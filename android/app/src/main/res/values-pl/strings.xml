@@ -15,4 +15,8 @@
     <string name="bad_link">To nie jest kod parowania StreamPhone.</string>
     <string name="bad_address">Wpisz adres komputera w sieci lokalnej, np. 192.168.0.10.</string>
     <string name="over_usb">Kablem</string>
+    <string name="link_title">Połączyć z tym komputerem?</string>
+    <string name="scan_failed">Nie udało się otworzyć skanera. Wpisz adres ręcznie.</string>
+    <string name="crashed">Aplikacja ostatnio nieoczekiwanie się zamknęła. Dotknij, aby skopiować szczegóły.</string>
+    <string name="crash_copied">Skopiowano</string>
 </resources>

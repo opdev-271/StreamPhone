@@ -18,4 +18,8 @@
     <string name="bad_address">Enter the computer\'s address on the local network, e.g. 192.168.0.10.</string>
     <string name="over_usb">By cable</string>
     <string name="over_wifi">Wi-Fi: %1$s</string>
+    <string name="link_title">Connect to this computer?</string>
+    <string name="scan_failed">Could not open the scanner. Enter the address instead.</string>
+    <string name="crashed">The app closed unexpectedly last time. Tap to copy the details.</string>
+    <string name="crash_copied">Copied</string>
 </resources>

@@ -16,4 +16,8 @@
     <string name="bad_address">Saisissez l\'adresse de l\'ordinateur sur le réseau local, p. ex. 192.168.0.10.</string>
     <string name="over_usb">Par câble</string>
     <string name="over_wifi">Wi-Fi : %1$s</string>
+    <string name="link_title">Se connecter à cet ordinateur ?</string>
+    <string name="scan_failed">Impossible d\'ouvrir le scanner. Saisissez l\'adresse.</string>
+    <string name="crashed">L\'application s\'est fermée de façon inattendue. Touchez pour copier les détails.</string>
+    <string name="crash_copied">Copié</string>
 </resources>

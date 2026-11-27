@@ -13,8 +13,12 @@ android {
         // Android 8: the oldest phones the dashboard itself supports.
         minSdk = 26
         targetSdk = 37
-        versionCode = 10200
-        versionName = "1.2.0"
+        versionCode = 10201
+        versionName = "1.2.1"
+    }
+
+    buildFeatures {
+        buildConfig = true
     }
 
     buildTypes {
@@ -34,4 +38,7 @@ android {
 dependencies {
     // The QR scanner for pairing over Wi-Fi.
     implementation(libs.zxing.embedded)
+    // The scanner asks for the camera permission through AndroidX, which it
+    // does not bring along itself; without it the app closes when scanning.
+    implementation(libs.androidx.core)
 }

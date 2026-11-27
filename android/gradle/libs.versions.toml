@@ -1,9 +1,12 @@
 [versions]
 agp = "9.5.2"
 zxingEmbedded = "4.3.0"
+androidxCore = "1.13.1"
 
 [libraries]
 zxing-embedded = { group = "com.journeyapps", name = "zxing-android-embedded", version.ref = "zxingEmbedded" }
+
+androidx-core = { group = "androidx.core", name = "core", version.ref = "androidxCore" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

@@ -27,6 +27,24 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
+            <!-- "Open in the StreamPhone app" on the pairing page in a browser. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="streamphone" android:host="pair" />
+            </intent-filter>
+
+            <!-- The pairing QR code read by the phone's own camera: a link to
+                 the PC's dashboard port. Older Androids offer the app for it;
+                 newer ones open the browser, where the page offers the app. -->
+            <intent-filter tools:ignore="AppLinkUrlError">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="http" android:host="*" android:port="47800" />
+            </intent-filter>
         </activity>
 
         <!-- The scanner follows the app's orientation instead of forcing its own. -->

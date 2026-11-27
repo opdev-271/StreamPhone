@@ -2,6 +2,12 @@
 
 Versions follow [semantic versioning](https://semver.org/). Each version has a `vX.Y.Z` tag on GitHub; releases come with the Windows installer and the Android app.
 
+## 1.2.1 – 2026-11-27
+
+- **The pairing QR code opens the app.** Read by the phone's own camera, the link used to end in the browser. Older Androids now offer StreamPhone for it; on newer ones the page in the browser shows "Open in the app" and keeps the one-time code unused until you choose. The app asks before it connects to a computer from such a link.
+- **Android app, scanner crash fixed:** "Scan QR code" closed the app, because a library the scanner needs for the camera permission (AndroidX Core) was missing from the package.
+- Android app: a page process killed by the system no longer closes the app, and if the app does close by itself, the next start shows why (a tap copies the details).
+
 ## 1.2.0 – 2026-11-26
 
 - **Windows app** with an installer: a window with the editor, an icon in the notification area, start with the system.

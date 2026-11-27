@@ -16,4 +16,8 @@
     <string name="bad_address">Gib die Adresse des Computers im lokalen Netzwerk ein, z. B. 192.168.0.10.</string>
     <string name="over_usb">Per Kabel</string>
     <string name="over_wifi">WLAN: %1$s</string>
+    <string name="link_title">Mit diesem Computer verbinden?</string>
+    <string name="scan_failed">Der Scanner ließ sich nicht öffnen. Gib die Adresse ein.</string>
+    <string name="crashed">Die App wurde zuletzt unerwartet beendet. Tippe, um die Details zu kopieren.</string>
+    <string name="crash_copied">Kopiert</string>
 </resources>

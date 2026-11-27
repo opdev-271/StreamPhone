@@ -32,6 +32,12 @@ function pairCode(): string | null {
   return /[#&]pair=([A-Za-z0-9]+)/.exec(location.hash)?.[1] ?? null;
 }
 
+/**
+ * An Android browser that is not the StreamPhone app (the app marks itself in
+ * the user agent). That is where a QR code read by the phone's camera lands.
+ */
+const outsideApp = /Android/.test(navigator.userAgent) && !/StreamPhoneApp\//.test(navigator.userAgent);
+
 /** A name for the list of paired phones on the PC, e.g. "Pixel 4a". */
 function deviceName(): string {
   const model = /Android [\d.]+; ([^;)]+?)(?: Build|\))/.exec(navigator.userAgent)?.[1];
@@ -52,6 +58,25 @@ class Connection {
   status = $state<'connecting' | 'online' | 'offline' | 'unpaired'>('connecting');
   config = $state<Config | null>(null);
   data = $state<Record<string, any>>({});
+  /**
+   * A link that hands the pairing code over to the StreamPhone app. Set while
+   * the page holds an unused code in a phone's browser: the code works once,
+   * so the browser must not spend it before the person has chosen.
+   */
+  appLink = $state<string | null>(null);
+  private stayHere = false;
+
+  /** Pair this browser after all, instead of the app. */
+  useBrowser() {
+    this.stayHere = true;
+    this.appLink = null;
+    this.status = 'connecting';
+    // Do not wait for the slow retry of an unpaired phone.
+    clearTimeout(this.retry);
+    if (!this.ws) this.open();
+  }
+
+  private retry: ReturnType<typeof setTimeout> | undefined;
 
   private ws: WebSocket | null = null;
   // Always listening for config changes made on the PC.
@@ -92,7 +117,12 @@ class Connection {
           const pairing = readPairing();
           const code = pairCode();
           if (pairing) this.send({ t: 'auth', device: pairing.device, proof: hmacSha256Hex(pairing.secret, String(msg.nonce)) });
-          else if (code) this.send({ t: 'pair', code, name: deviceName() });
+          else if (code && outsideApp && !this.stayHere) {
+            refused = true;
+            this.status = 'unpaired';
+            this.appLink = `streamphone://pair?h=${encodeURIComponent(location.host)}&c=${code}`;
+            ws.close();
+          } else if (code) this.send({ t: 'pair', code, name: deviceName() });
           else {
             refused = true;
             this.status = 'unpaired';
@@ -102,6 +132,7 @@ class Connection {
         }
         case 'paired':
           writePairing({ device: msg.device, secret: msg.secret });
+          this.appLink = null;
           // The code is spent; keep it out of the address and the history.
           history.replaceState(null, '', location.pathname + location.search);
           break;
@@ -146,7 +177,7 @@ class Connection {
       this.pending.clear();
       // An unpaired phone keeps knocking, slowly: it gets in as soon as it is
       // paired, and a just-unpaired one retries once without its old pairing.
-      setTimeout(() => this.open(), refused ? 4000 : this.retryMs);
+      this.retry = setTimeout(() => this.open(), refused ? 4000 : this.retryMs);
       this.retryMs = Math.min(this.retryMs * 2, 4000);
     };
 

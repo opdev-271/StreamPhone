@@ -15,4 +15,8 @@
     <string name="bad_link">Esto no es un código de emparejamiento de StreamPhone.</string>
     <string name="bad_address">Escribe la dirección del ordenador en la red local, p. ej. 192.168.0.10.</string>
     <string name="over_usb">Por cable</string>
+    <string name="link_title">¿Conectar con este ordenador?</string>
+    <string name="scan_failed">No se pudo abrir el escáner. Escribe la dirección.</string>
+    <string name="crashed">La aplicación se cerró inesperadamente la última vez. Toca para copiar los detalles.</string>
+    <string name="crash_copied">Copiado</string>
 </resources>

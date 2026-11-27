@@ -15,4 +15,8 @@
     <string name="bad_link">Tohle není párovací kód StreamPhone.</string>
     <string name="bad_address">Zadej adresu počítače v místní síti, např. 192.168.0.10.</string>
     <string name="over_usb">Kabelem</string>
+    <string name="link_title">Připojit k tomuto počítači?</string>
+    <string name="scan_failed">Skener se nepodařilo otevřít. Zadej adresu ručně.</string>
+    <string name="crashed">Aplikace se minule nečekaně zavřela. Klepnutím zkopíruješ podrobnosti.</string>
+    <string name="crash_copied">Zkopírováno</string>
 </resources>

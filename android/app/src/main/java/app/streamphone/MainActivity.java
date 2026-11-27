@@ -3,6 +3,8 @@ package app.streamphone;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
@@ -21,6 +23,7 @@ import android.view.ViewGroup;
 import android.view.WindowInsets;
 import android.view.WindowInsetsController;
 import android.view.WindowManager;
+import android.webkit.RenderProcessGoneDetail;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
@@ -36,6 +39,8 @@ import android.widget.Toast;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.URL;
@@ -56,12 +61,17 @@ public class MainActivity extends Activity {
     private static final String USB = "http://localhost:47800/";
     private static final String PREFS = "streamphone";
     private static final String KEY_WIFI = "wifi";
+    private static final String KEY_CRASH = "crash";
+    /** Tells the dashboard it runs inside the app, so it does not offer to open the app. */
+    private static final String AGENT_MARK = " StreamPhoneApp/";
     private static final int PORT = 47800;
 
     private final Handler main = new Handler(Looper.getMainLooper());
+    private FrameLayout root;
     private WebView web;
     private LinearLayout setup;
     private TextView status;
+    private TextView crashed;
     private Button forget;
     private SharedPreferences prefs;
 
@@ -74,9 +84,10 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle state) {
         super.onCreate(state);
         prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
+        rememberCrashes();
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
-        FrameLayout root = new FrameLayout(this);
+        root = new FrameLayout(this);
         root.setBackgroundColor(Color.BLACK);
         web = createWebView();
         root.addView(web, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
@@ -89,6 +100,15 @@ public class MainActivity extends Activity {
         }
 
         findComputer();
+        open(getIntent());
+    }
+
+    /** The app is already running and a pairing link was opened from a QR reader or the browser. */
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        open(intent);
     }
 
     @Override
@@ -150,6 +170,7 @@ public class MainActivity extends Activity {
         // Web content only: no files or content providers of the phone.
         settings.setAllowFileAccess(false);
         settings.setAllowContentAccess(false);
+        settings.setUserAgentString(settings.getUserAgentString() + AGENT_MARK + BuildConfig.VERSION_NAME);
 
         view.setWebViewClient(new WebViewClient() {
             @Override
@@ -162,8 +183,28 @@ public class MainActivity extends Activity {
             public void onReceivedError(WebView v, WebResourceRequest request, WebResourceError error) {
                 if (request.isForMainFrame()) lost();
             }
+
+            @Override
+            public boolean onRenderProcessGone(WebView v, RenderProcessGoneDetail detail) {
+                // The system killed the page's process (low memory, a WebView
+                // bug). Left unhandled this closes the whole app; start over
+                // with a fresh view instead.
+                main.post(() -> replaceWebView(v));
+                return true;
+            }
         });
         return view;
+    }
+
+    private void replaceWebView(WebView dead) {
+        if (dead != web || isFinishing()) return;
+        int at = root.indexOfChild(dead);
+        root.removeView(dead);
+        dead.destroy();
+        web = createWebView();
+        root.addView(web, Math.max(at, 0), new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        connected = null;
+        findComputer();
     }
 
     /** The page could not be loaded: the cable was pulled or the PC went away. */
@@ -240,9 +281,8 @@ public class MainActivity extends Activity {
      */
     private boolean pair(String link) {
         Uri uri = link == null ? null : Uri.parse(link.trim());
-        if (uri == null || !"http".equals(uri.getScheme()) || uri.getHost() == null || !isLocal(uri.getHost())) return false;
+        if (!valid(uri)) return false;
         String fragment = uri.getFragment();
-        if (fragment == null || !fragment.matches("pair=[A-Za-z0-9]{4,16}")) return false;
 
         int port = uri.getPort() > 0 ? uri.getPort() : PORT;
         String base = "http://" + uri.getHost() + ":" + port + "/";
@@ -250,6 +290,49 @@ public class MainActivity extends Activity {
         search++;
         show(base, base + "#" + fragment);
         return true;
+    }
+
+    private static boolean valid(Uri uri) {
+        if (uri == null || !"http".equals(uri.getScheme()) || uri.getHost() == null || !isLocal(uri.getHost())) return false;
+        String fragment = uri.getFragment();
+        return fragment != null && fragment.matches("pair=[A-Za-z0-9]{4,16}");
+    }
+
+    /**
+     * A pairing link opened from outside the app: the QR code read by the
+     * phone's own camera ({@code http://…/#pair=CODE}), or the "open in the
+     * app" button of the dashboard in a browser
+     * ({@code streamphone://pair?h=192.168.0.10:47800&c=CODE}). Anything can
+     * send such a link, so the app asks before it connects anywhere.
+     */
+    private void open(Intent intent) {
+        Uri uri = intent == null || !Intent.ACTION_VIEW.equals(intent.getAction()) ? null : intent.getData();
+        if (uri == null) return;
+        // Once only: not again when the screen is rebuilt.
+        intent.setData(null);
+
+        String built;
+        try {
+            if ("streamphone".equals(uri.getScheme())) {
+                built = "http://" + uri.getQueryParameter("h") + "/#pair=" + uri.getQueryParameter("c");
+            } else {
+                built = uri.toString();
+            }
+        } catch (RuntimeException malformed) {
+            built = null;
+        }
+        final String link = built;
+        final Uri target = link == null ? null : Uri.parse(link);
+        if (!valid(target)) {
+            Toast.makeText(this, R.string.bad_link, Toast.LENGTH_LONG).show();
+            return;
+        }
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.link_title)
+                .setMessage(target.getHost())
+                .setNegativeButton(R.string.cancel, null)
+                .setPositiveButton(R.string.connect, (dialog, which) -> pair(link))
+                .show();
     }
 
     /** Only addresses on the local network: the app never opens the dashboard of some site. */
@@ -268,8 +351,15 @@ public class MainActivity extends Activity {
         scanner.setDesiredBarcodeFormats(IntentIntegrator.QR_CODE);
         scanner.setPrompt(getString(R.string.scan_prompt));
         scanner.setBeepEnabled(false);
-        scanner.setOrientationLocked(true);
-        scanner.initiateScan();
+        // The manifest already keeps the scanner in landscape, like the app.
+        scanner.setOrientationLocked(false);
+        try {
+            scanner.initiateScan();
+        } catch (RuntimeException failed) {
+            // No scanner on this phone: the address can still be typed in.
+            Toast.makeText(this, R.string.scan_failed, Toast.LENGTH_LONG).show();
+            typeAddress();
+        }
     }
 
     @Override
@@ -277,9 +367,64 @@ public class MainActivity extends Activity {
         IntentResult scanned = IntentIntegrator.parseActivityResult(request, result, data);
         if (scanned == null) {
             super.onActivityResult(request, result, data);
-        } else if (scanned.getContents() != null && !pair(scanned.getContents())) {
-            Toast.makeText(this, R.string.bad_link, Toast.LENGTH_LONG).show();
+            return;
         }
+        if (scanned.getContents() == null) return;
+        boolean paired;
+        try {
+            paired = pair(scanned.getContents());
+        } catch (RuntimeException unreadable) {
+            paired = false;
+        }
+        if (!paired) Toast.makeText(this, R.string.bad_link, Toast.LENGTH_LONG).show();
+    }
+
+    // ---- when the app closes by itself ---------------------------------------
+
+    /**
+     * Keeps the reason of a crash, from any thread, so the next start can show
+     * it: on a phone there is nowhere else to read it.
+     */
+    private void rememberCrashes() {
+        final Thread.UncaughtExceptionHandler system = Thread.getDefaultUncaughtExceptionHandler();
+        if (system instanceof CrashKeeper) return;
+        Thread.setDefaultUncaughtExceptionHandler(new CrashKeeper(prefs, system));
+    }
+
+    private static final class CrashKeeper implements Thread.UncaughtExceptionHandler {
+        private final SharedPreferences prefs;
+        private final Thread.UncaughtExceptionHandler next;
+
+        CrashKeeper(SharedPreferences prefs, Thread.UncaughtExceptionHandler next) {
+            this.prefs = prefs;
+            this.next = next;
+        }
+
+        @Override
+        @SuppressLint("ApplySharedPref")
+        public void uncaughtException(Thread thread, Throwable error) {
+            try {
+                StringWriter text = new StringWriter();
+                error.printStackTrace(new PrintWriter(text));
+                String report = "StreamPhone " + BuildConfig.VERSION_NAME + ", Android " + android.os.Build.VERSION.RELEASE
+                        + ", " + android.os.Build.MANUFACTURER + " " + android.os.Build.MODEL + "\n" + text;
+                // commit, not apply: the process is about to end.
+                prefs.edit().putString(KEY_CRASH, report.length() > 6000 ? report.substring(0, 6000) : report).commit();
+            } catch (Throwable ignored) {
+                // Nothing more can be done here.
+            }
+            if (next != null) next.uncaughtException(thread, error);
+        }
+    }
+
+    private void copyCrash() {
+        String report = prefs.getString(KEY_CRASH, null);
+        if (report == null) return;
+        ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+        if (clipboard != null) clipboard.setPrimaryClip(ClipData.newPlainText("StreamPhone", report));
+        Toast.makeText(this, R.string.crash_copied, Toast.LENGTH_SHORT).show();
+        prefs.edit().remove(KEY_CRASH).apply();
+        crashed.setVisibility(View.GONE);
     }
 
     /** For phones without a camera: the address and the code, typed in. */
@@ -354,6 +499,21 @@ public class MainActivity extends Activity {
         });
         row.addView(forget);
         box.addView(row);
+
+        // Shown after the app closed by itself; a tap copies the details.
+        String report = prefs.getString(KEY_CRASH, null);
+        crashed = text(R.string.crashed, 13, 0xFFFF9F0A);
+        crashed.setGravity(Gravity.CENTER);
+        crashed.setPadding(0, dp(18), 0, 0);
+        crashed.setMaxWidth(dp(560));
+        crashed.setMaxLines(3);
+        if (report != null) {
+            String[] lines = report.split("\n");
+            crashed.setText(getString(R.string.crashed) + "\n" + (lines.length > 1 ? lines[1] : ""));
+        }
+        crashed.setVisibility(report != null ? View.VISIBLE : View.GONE);
+        crashed.setOnClickListener(v -> copyCrash());
+        box.addView(crashed);
         return box;
     }
 

@@ -15,7 +15,14 @@
 <!-- Shown while the PC is unreachable: the phone still works as a clock. -->
 <div class="offline">
   <div class="time">{time}</div>
-  {#if conn.status === 'unpaired'}
+  {#if conn.appLink}
+    <!-- The pairing QR was read by the phone's camera and opened a browser. -->
+    <div class="how">{t('Máš v telefonu aplikaci StreamPhone? Spáruj telefon v ní.')}</div>
+    <div class="choice">
+      <a class="go" href={conn.appLink}>{t('Otevřít v aplikaci')}</a>
+      <button onclick={() => conn.useBrowser()}>{t('Pokračovat v prohlížeči')}</button>
+    </div>
+  {:else if conn.status === 'unpaired'}
     <div class="hint"><span class="pulse stop"></span>{t('Telefon není spárovaný')}</div>
     <div class="how">{t('Na počítači otevři editor StreamPhone, záložku Připojení, a naskenuj QR kód.')}</div>
   {:else}
@@ -68,6 +75,26 @@
     text-align: center;
     color: var(--dim);
     font-size: 3.2vmin;
+  }
+  .choice {
+    margin-top: 4vmin;
+    display: flex;
+    align-items: center;
+  }
+  .choice a,
+  .choice button {
+    margin: 0 1.4vmin;
+    padding: 2.6vmin 4.4vmin;
+    border-radius: 3vmin;
+    background: var(--line);
+    color: var(--text);
+    font-size: 3.4vmin;
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .choice .go {
+    background: var(--accent);
+    color: #fff;
   }
   @keyframes pulse {
     50% {

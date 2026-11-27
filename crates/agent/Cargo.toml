@@ -1,6 +1,6 @@
 [package]
 name = "streamphone-agent"
-version = "1.2.0"
+version = "1.2.1"
 license = "MIT"
 edition = "2021"
 description = "StreamPhone desktop agent: serves the phone UI and executes actions on the PC"
