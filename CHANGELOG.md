@@ -2,6 +2,16 @@
 
 Versions follow [semantic versioning](https://semver.org/). Each version has a `vX.Y.Z` tag on GitHub; releases come with the Windows installer and the Android app.
 
+## 1.4.0 – 2026-11-27
+
+- **Ready-made pages.** The + next to the pages in the editor opens a gallery: video editing for Premiere Pro and DaVinci Resolve, After Effects, streaming, coding, Teams meetings, music, gaming and a computer overview, or an empty page. An added page is an ordinary page: every key and widget on it can be changed.
+- **Wi-Fi is the recommended connection.** The Connection tab, the Android app and the README lead with it; the cable stays for places without Wi-Fi.
+- **Security looks:** three new themes, `cyber`, `redteam` and `blueteam`, with square panels, a monospaced face and a grid or scan lines behind them.
+- **iPhone in the browser:** the dashboard works as a home-screen app in Safari (not yet tried on a real iPhone). An app for iPhone is planned.
+- **Pairing by typing the code:** the unpaired screen takes the code shown under the QR code, for where the QR link cannot reach, such as an iPhone's home-screen app.
+- Key combinations may contain punctuation (`ctrl+=`, `shift+/`, `ctrl+shift+[`) and the number pad (`num0`–`num9`), which the editing shortcuts need.
+- New icons for keys: undo, redo, save, flag, magnet, zoom-in, zoom-out, upload, copy, layers, film, hand.
+
 ## 1.2.1 – 2026-11-27
 
 - **The pairing QR code opens the app.** Read by the phone's own camera, the link used to end in the browser. Older Androids now offer StreamPhone for it; on newer ones the page in the browser shows "Open in the app" and keeps the one-time code unused until you choose. The app asks before it connects to a computer from such a link.

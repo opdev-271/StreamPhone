@@ -211,10 +211,28 @@ fn virtual_key(name: &str) -> Option<u16> {
         "volumeup" => 0xAF,
         "volumedown" => 0xAE,
         "volumemute" => 0xAD,
+        // Punctuation, by its place on a US keyboard, which is what programs'
+        // shortcuts are written for. "plus" because + separates the keys.
+        "=" | "plus" => 0xBB,
+        "-" | "minus" => 0xBD,
+        "," | "comma" => 0xBC,
+        "." | "period" => 0xBE,
+        "/" | "slash" => 0xBF,
+        ";" => 0xBA,
+        "'" => 0xDE,
+        "[" => 0xDB,
+        "]" => 0xDD,
+        "\\" | "backslash" => 0xDC,
+        "`" => 0xC0,
         _ => {
             if let Some(n) = name.strip_prefix('f').and_then(|n| n.parse::<u16>().ok()) {
                 if (1..=24).contains(&n) {
                     return Some(0x70 + n - 1);
+                }
+            }
+            if let Some(n) = name.strip_prefix("num").and_then(|n| n.parse::<u16>().ok()) {
+                if n <= 9 {
+                    return Some(0x60 + n);
                 }
             }
             let mut chars = name.chars();

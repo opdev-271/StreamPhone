@@ -2,7 +2,7 @@
 <resources>
     <string name="searching">Recherche de l\'ordinateur…</string>
     <string name="not_found">Ordinateur introuvable</string>
-    <string name="hint">Branchez le téléphone par câble (débogage USB activé) ou associez-le en Wi-Fi : sur l\'ordinateur, ouvrez StreamPhone → Connexion.</string>
+    <string name="hint">Associez le téléphone en Wi-Fi : sur l\'ordinateur, ouvrez StreamPhone → Connexion et scannez le code QR. Sans Wi-Fi, branchez-le par câble (débogage USB activé).</string>
     <string name="scan">Scanner le code QR</string>
     <string name="type">Saisir l\'adresse</string>
     <string name="retry">Réessayer</string>

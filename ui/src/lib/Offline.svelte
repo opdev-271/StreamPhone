@@ -10,6 +10,13 @@
   // Always 24-hour: a 12-hour locale's "PM" does not fit the screen.
   const two = (n: number) => String(n).padStart(2, '0');
   const time = $derived(`${two(now.getHours())}:${two(now.getMinutes())}`);
+
+  let code = $state('');
+  function pair(e: Event) {
+    e.preventDefault();
+    if (code.trim().length >= 4) conn.pair(code);
+    code = '';
+  }
 </script>
 
 <!-- Shown while the PC is unreachable: the phone still works as a clock. -->
@@ -25,6 +32,13 @@
   {:else if conn.status === 'unpaired'}
     <div class="hint"><span class="pulse stop"></span>{t('Telefon není spárovaný')}</div>
     <div class="how">{t('Na počítači otevři editor StreamPhone, záložku Připojení, a naskenuj QR kód.')}</div>
+    <form class="choice" onsubmit={pair}>
+      <input type="text" maxlength="12" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false" placeholder={t('Nebo opiš kód')} bind:value={code} />
+      <button class="go" type="submit" disabled={code.trim().length < 4}>{t('Spárovat')}</button>
+    </form>
+    {#if conn.codeRefused}
+      <div class="how bad">{t('Kód neplatí nebo už vypršel.')}</div>
+    {/if}
   {:else}
     <div class="hint"><span class="pulse"></span>{t('Čekám na počítač…')}</div>
   {/if}
@@ -95,6 +109,36 @@
   .choice .go {
     background: var(--accent);
     color: #fff;
+  }
+  .choice .go:disabled {
+    opacity: 0.4;
+  }
+  .choice input {
+    width: 44vmin;
+    margin: 0 1.4vmin;
+    padding: 2.6vmin 3vmin;
+    border: 0;
+    border-radius: 3vmin;
+    background: var(--line);
+    color: var(--text);
+    font: inherit;
+    font-size: 3.4vmin;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-align: center;
+    text-transform: uppercase;
+    outline: none;
+    user-select: text;
+    -webkit-user-select: text;
+  }
+  .choice input::placeholder {
+    letter-spacing: 0;
+    text-transform: none;
+    font-weight: 400;
+    color: var(--mute);
+  }
+  .how.bad {
+    color: var(--bad);
   }
   @keyframes pulse {
     50% {

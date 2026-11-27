@@ -22,6 +22,7 @@ Co umí:
 |---|---|---|---|
 | Windows 10 64bit a novější | Android 8 a novější | ano | ano |
 | macOS | Android 8 a novější | ano | ano |
+| Windows, macOS | iPhone (v Safari; aplikace přijde později) | ne | ano |
 
 Linux později (agent má pro něj vrstvu `platform`, zatím jen zástupnou).
 
@@ -33,7 +34,9 @@ Stav: raná verze. Vyvíjeno a zkoušeno na Windows 11 s emulátorem Androidu; n
 
 **Telefon (Android 8 a novější):** nainstaluj `StreamPhone-x.y.z.apk` z téhož vydání (telefon se zeptá na povolení instalace z neznámého zdroje). Bez aplikace to jde taky: dashboard se otevře v prohlížeči.
 
-Pro připojení kabelem je na počítači potřeba `adb` z [Android platform-tools](https://developer.android.com/tools/releases/platform-tools); stačí dát `adb.exe` s jeho dvěma knihovnami do složky, kam se StreamPhone nainstaloval. Přes Wi-Fi `adb` potřeba není.
+**Propoj je přes Wi-Fi (doporučeno):** v aplikaci na počítači otevři **Připojení**, zapni **Povolit Wi-Fi** a naskenuj telefonem QR kód. Na telefonu není potřeba nic nastavovat ani nic připojovat; podrobnosti jsou v části [Připojení přes Wi-Fi](#připojení-přes-wi-fi).
+
+**Nebo kabelem**, pro místa bez Wi-Fi: zapni na telefonu ladění USB a připoj ho. K tomu je na počítači potřeba `adb` z [Android platform-tools](https://developer.android.com/tools/releases/platform-tools); stačí dát `adb.exe` s jeho dvěma knihovnami do složky, kam se StreamPhone nainstaloval. Přes Wi-Fi `adb` potřeba není.
 
 ### Aplikace pro Windows
 
@@ -89,6 +92,8 @@ Dashboard je pak na `http://localhost:47800/` (na PC i na telefonu připojeném 
 Na telefonu zapni **Možnosti pro vývojáře → Ladění USB** a po připojení potvrď dotaz „Povolit ladění USB“. V Chromu pak přes nabídku **Přidat na plochu** získáš celoobrazovkovou aplikaci.
 
 ## Připojení přes Wi-Fi
+
+**Android:** naskenuj QR kód v aplikaci StreamPhone. **iPhone:** naskenuj ho fotoaparátem, dashboard se otevře v Safari. Přes *Sdílet → Přidat na plochu* pak získáš aplikaci přes celou obrazovku; iOS jí drží úložiště odděleně od Safari, takže se páruje zvlášť: opiš kód zobrazený pod QR kódem. Takhle se dá spárovat každý telefon. iPhone na obyčejném http stránka neudrží vzhůru, proto si na dobu, kdy slouží jako panel, nastav *Nastavení → Zobrazení a jas → Uzamčení → Nikdy*. **Cesta přes iPhone zatím nebyla vyzkoušena na skutečném iPhonu.**
 
 Ve výchozím stavu agent poslouchá jen na `127.0.0.1` a telefon se k němu dostane pouze kabelem. Wi-Fi se zapíná v editoru v záložce **Připojení** (nebo `"wireless": true` v nastavení):
 
@@ -292,6 +297,8 @@ V daném čase dashboard ztmavne (`dim` 0–1), s `red` svítí jen červeně a 
 
 ## Editor
 
+**Hotové stránky:** tlačítko **+** vedle stránek otevře galerii se stránkami pro střih videa (Premiere Pro, DaVinci Resolve), After Effects, stream, programování, schůzky v Teams, hudbu, hraní a přehled počítače. Přidaná stránka je obyčejná stránka, takže na ní jde změnit každé tlačítko i widget. Zkratky odpovídají výchozímu nastavení programů ve Windows; stránka pro stream mačká F13–F24, které si v OBS nebo Streamlabs přiřadíš k akcím.
+
 Na `http://localhost:47801/` je editor s živým náhledem telefonu: rozložení (widgety se přetahují přímo v náhledu, velikost se mění tažením za roh, jdou přidávat a mazat, stejně jako stránky), motivy, barvy, karty, tapety (včetně nahrání obrázku), písmo, vzhled jednotlivých stránek, tlačítka (ikona, barva, text, akce, pořadí) a noční režim. Změny se ukládají samy a na telefonu se projeví hned.
 
 Editor běží na vlastním portu, který se do telefonu nepřesměrovává. Telefon tak může tlačítka jen mačkat; co tlačítko spustí, jde změnit pouze z PC. Před prvním zásahem editor uloží původní nastavení jako `config.backup.json`.
@@ -317,7 +324,7 @@ Vlastní obrázky a písma patří do složky `%APPDATA%\StreamPhone\assets` (vy
 }
 ```
 
-Vestavěné motivy: `midnight` (výchozí), `graphite`, `ocean`, `forest`, `sunset`, `rose`, `paper` (světlý), `terminal`, `neon`, `glass`.
+Vestavěné motivy: `midnight` (výchozí), `graphite`, `ocean`, `forest`, `sunset`, `rose`, `paper` (světlý), `terminal`, `neon`, `cyber`, `redteam`, `blueteam` (tři bezpečnostní vzhledy: hranaté panely, neproporcionální písmo, mřížka v pozadí), `glass`.
 
 | Část | Položky |
 |---|---|

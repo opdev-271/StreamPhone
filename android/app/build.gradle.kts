@@ -13,8 +13,8 @@ android {
         // Android 8: the oldest phones the dashboard itself supports.
         minSdk = 26
         targetSdk = 37
-        versionCode = 10201
-        versionName = "1.2.1"
+        versionCode = 10400
+        versionName = "1.4.0"
     }
 
     buildFeatures {

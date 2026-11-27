@@ -23,6 +23,7 @@ What it does:
 |---|---|---|---|
 | Windows 10 64-bit or newer | Android 8 or newer | yes | yes |
 | macOS | Android 8 or newer | yes | yes |
+| Windows, macOS | iPhone (in Safari; an app comes later) | no | yes |
 
 Linux later (the agent has a `platform` layer for it, a stub so far).
 
@@ -34,7 +35,9 @@ Status: an early version. Developed and tried on Windows 11 with an Android emul
 
 **Phone (Android 8 or newer):** install `StreamPhone-x.y.z.apk` from the same release (the phone asks to allow installing from this source). It also works without the app: the dashboard opens in the browser.
 
-For a cable connection the computer needs `adb` from the [Android platform-tools](https://developer.android.com/tools/releases/platform-tools); putting `adb.exe` and its two libraries into the folder StreamPhone was installed to is enough. Wi-Fi needs no `adb`.
+**Connect them over Wi-Fi (recommended):** in the Windows app open **Connection**, turn on **Allow Wi-Fi** and scan the QR code with the phone. Nothing has to be set up on the phone and nothing plugged in; details are in [Connecting over Wi-Fi](#connecting-over-wi-fi).
+
+**Or by cable**, for places without Wi-Fi: turn on USB debugging on the phone and plug it in. For this the computer needs `adb` from the [Android platform-tools](https://developer.android.com/tools/releases/platform-tools); putting `adb.exe` and its two libraries into the folder StreamPhone was installed to is enough. Wi-Fi needs no `adb`.
 
 ### The Windows app
 
@@ -90,6 +93,8 @@ The dashboard is then at `http://localhost:47800/` (on the PC and on a phone con
 On the phone, turn on **Developer options → USB debugging** and confirm the "Allow USB debugging" prompt after plugging in. In Chrome, **Add to Home screen** then gives you a full-screen app.
 
 ## Connecting over Wi-Fi
+
+**Android:** scan the QR code in the StreamPhone app. **iPhone:** scan it with the camera; the dashboard opens in Safari. *Share → Add to Home Screen* then gives a full-screen app; iOS keeps its storage apart from Safari's, so it pairs separately: type the code shown under the QR code. Any phone can pair that way. An iPhone on plain http cannot be kept awake by the page, so set *Settings → Display & Brightness → Auto-Lock → Never* while it serves as a panel. **The iPhone path has not been tried on a real iPhone yet.**
 
 By default the agent listens on `127.0.0.1` only and the phone reaches it through the cable alone. Wi-Fi is switched on in the editor's **Connection** tab (or `"wireless": true` in the config):
 
@@ -293,6 +298,8 @@ During these hours the dashboard dims (`dim` 0–1), with `red` it shows red lig
 
 ## Editor
 
+**Ready-made pages:** the **+** next to the pages opens a gallery with pages for video editing (Premiere Pro, DaVinci Resolve), After Effects, streaming, coding, Teams meetings, music, gaming and a computer overview. A page added from it is an ordinary page, so every key and widget on it can be changed. The shortcuts are the programs' Windows defaults; the stream page presses F13–F24, which you assign to actions in OBS or Streamlabs yourself.
+
 `http://localhost:47801/` (or the window of the Windows app) is the editor with a live preview of the phone: layout (drag widgets right in the preview, resize by the corner, add and delete them and pages), themes, colours, cards, wallpapers (with picture upload), font, the look of single pages, buttons (icon, colour, text, action, order), night mode, connection and language. Changes are saved automatically and show up on the phone right away.
 
 The editor runs on a port of its own that is never forwarded to the phone. The phone can therefore only press buttons; what a button launches can be changed from the PC alone. Before its first change the editor saves the original config as `config.backup.json`.
@@ -318,7 +325,7 @@ Your own pictures and fonts go into `%APPDATA%\StreamPhone\assets` (created auto
 }
 ```
 
-Built-in themes: `midnight` (default), `graphite`, `ocean`, `forest`, `sunset`, `rose`, `paper` (light), `terminal`, `neon`, `glass`.
+Built-in themes: `midnight` (default), `graphite`, `ocean`, `forest`, `sunset`, `rose`, `paper` (light), `terminal`, `neon`, `cyber`, `redteam`, `blueteam` (the three security looks: square panels, a monospaced face, a grid behind them), `glass`.
 
 | Part | Items |
 |---|---|

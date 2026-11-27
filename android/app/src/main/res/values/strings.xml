@@ -3,7 +3,7 @@
     <string name="app_name" translatable="false">StreamPhone</string>
     <string name="searching">Looking for the computer…</string>
     <string name="not_found">Computer not found</string>
-    <string name="hint">Plug the phone in with a cable (USB debugging on), or pair it over Wi-Fi: on the computer open StreamPhone → Connection.</string>
+    <string name="hint">Pair over Wi-Fi: on the computer open StreamPhone → Connection and scan the QR code. Without Wi-Fi, plug the phone in with a cable (USB debugging on).</string>
     <string name="scan">Scan QR code</string>
     <string name="type">Enter address</string>
     <string name="retry">Try again</string>

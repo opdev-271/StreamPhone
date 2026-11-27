@@ -9,8 +9,9 @@ export default defineConfig({
   plugins: [svelte()],
   build: {
     // Old phones: Android 8 ships with an old WebView/Chrome if it was never updated.
-    target: ['chrome75'],
-    cssTarget: ['chrome75'],
+    // iPhones: Safari 13 and newer.
+    target: ['chrome75', 'safari13'],
+    cssTarget: ['chrome75', 'safari13'],
     rollupOptions: {
       input: {
         // The phone's dashboard and the editor that runs on the PC.

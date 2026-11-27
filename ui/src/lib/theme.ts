@@ -129,6 +129,32 @@ export const presets: Record<string, ThemeDef> = {
   neon: {
     colors: { bg: '#07030f', card: '#120a22', cardHi: '#1d1136', line: '#3a1f6b', text: '#f3eaff', dim: '#b9a3e0', mute: '#7a66a8', accent: '#ff3df2', ok: '#2ff3e0', warn: '#ffe14d', bad: '#ff4d6d' },
   },
+  // The security looks: a console in an operations room. Square cards, a
+  // monospaced face and a faint grid behind see-through panels.
+  cyber: {
+    colors: { bg: '#02070d', card: '#06131f', cardHi: '#0c2233', line: '#00e5ff38', text: '#d8f6ff', dim: '#7fb6c9', mute: '#48728a', accent: '#00e5ff', ok: '#00ff9c', warn: '#ffd000', bad: '#ff2a6d' },
+    background: {
+      fill: 'linear-gradient(#00e5ff12 1px, transparent 1px) 0 0 / 7vmin 7vmin, linear-gradient(90deg, #00e5ff12 1px, transparent 1px) 0 0 / 7vmin 7vmin, radial-gradient(ellipse at 50% 0%, #06304a 0%, #02070d 70%)',
+    },
+    card: { opacity: 0.78, blur: 1.2, radius: 0.6, depth: false },
+    font: { family: "'Cascadia Mono', 'JetBrains Mono', 'Roboto Mono', Consolas, monospace" },
+  },
+  redteam: {
+    colors: { bg: '#080000', card: '#140506', cardHi: '#260a0c', line: '#ff2a2a40', text: '#ffe1de', dim: '#d08e8a', mute: '#8a4d4b', accent: '#ff2a2a', ok: '#ffb000', warn: '#ffb000', bad: '#ff2a2a' },
+    background: {
+      fill: 'repeating-linear-gradient(0deg, #ff2a2a0d 0 1px, transparent 1px 0.9vmin), radial-gradient(ellipse at 50% 100%, #3a0508 0%, #080000 70%)',
+    },
+    card: { opacity: 0.8, blur: 1, radius: 0.6, depth: false },
+    font: { family: "'Cascadia Mono', 'JetBrains Mono', 'Roboto Mono', Consolas, monospace" },
+  },
+  blueteam: {
+    colors: { bg: '#030816', card: '#081328', cardHi: '#102042', line: '#3d7bff40', text: '#e2ecff', dim: '#93a9d6', mute: '#566a99', accent: '#3d7bff', ok: '#2fe6a7', warn: '#ffc53d', bad: '#ff4d6d' },
+    background: {
+      fill: 'radial-gradient(#3d7bff26 1px, transparent 1.4px) 0 0 / 5vmin 5vmin, linear-gradient(160deg, #06173a 0%, #030816 60%)',
+    },
+    card: { opacity: 0.8, blur: 1.2, radius: 1, depth: false },
+    font: { family: "'Cascadia Mono', 'JetBrains Mono', 'Roboto Mono', Consolas, monospace" },
+  },
   glass: {
     background: { fill: 'linear-gradient(140deg, #1b2a4a 0%, #3b2a5c 50%, #16404a 100%)' },
     card: { opacity: 0.45, blur: 2.5, radius: 3.4 },

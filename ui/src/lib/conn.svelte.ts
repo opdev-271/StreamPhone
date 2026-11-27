@@ -65,6 +65,22 @@ class Connection {
    */
   appLink = $state<string | null>(null);
   private stayHere = false;
+  /** A pairing code typed on the phone instead of scanned. */
+  private typed: string | null = null;
+  /** The typed code was wrong, used or too old. */
+  codeRefused = $state(false);
+
+  /**
+   * Pair with the code shown on the PC. For where the QR link cannot reach:
+   * an iPhone's home-screen app keeps its own storage, apart from Safari's.
+   */
+  pair(code: string) {
+    this.typed = code.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+    this.codeRefused = false;
+    this.status = 'connecting';
+    clearTimeout(this.retry);
+    if (!this.ws) this.open();
+  }
 
   /** Pair this browser after all, instead of the app. */
   useBrowser() {
@@ -115,8 +131,10 @@ class Connection {
         case 'hello': {
           // Wi-Fi: prove the pairing, or pair now with the code from the QR.
           const pairing = readPairing();
-          const code = pairCode();
-          if (pairing) this.send({ t: 'auth', device: pairing.device, proof: hmacSha256Hex(pairing.secret, String(msg.nonce)) });
+          const code = this.typed ?? pairCode();
+          // A typed code wins over an old pairing the PC may have forgotten.
+          if (this.typed) this.send({ t: 'pair', code: this.typed, name: deviceName() });
+          else if (pairing) this.send({ t: 'auth', device: pairing.device, proof: hmacSha256Hex(pairing.secret, String(msg.nonce)) });
           else if (code && outsideApp && !this.stayHere) {
             refused = true;
             this.status = 'unpaired';
@@ -133,6 +151,7 @@ class Connection {
         case 'paired':
           writePairing({ device: msg.device, secret: msg.secret });
           this.appLink = null;
+          this.typed = null;
           // The code is spent; keep it out of the address and the history.
           history.replaceState(null, '', location.pathname + location.search);
           break;
@@ -140,6 +159,10 @@ class Connection {
           refused = true;
           // The PC forgot this phone: stop presenting the old pairing.
           if (msg.reason === 'unknown') writePairing(null);
+          if (this.typed) {
+            this.typed = null;
+            this.codeRefused = true;
+          }
           this.status = 'unpaired';
           break;
         case 'welcome': {

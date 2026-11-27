@@ -2,7 +2,7 @@
 <resources>
     <string name="searching">Buscando el ordenador…</string>
     <string name="not_found">Ordenador no encontrado</string>
-    <string name="hint">Conecta el teléfono por cable (con la depuración USB activada) o emparéjalo por Wi-Fi: en el ordenador abre StreamPhone → Conexión.</string>
+    <string name="hint">Empareja el teléfono por Wi-Fi: en el ordenador abre StreamPhone → Conexión y escanea el código QR. Sin Wi-Fi, conéctalo por cable (con la depuración USB activada).</string>
     <string name="scan">Escanear código QR</string>
     <string name="type">Escribir dirección</string>
     <string name="retry">Reintentar</string>

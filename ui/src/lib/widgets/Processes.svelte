@@ -134,7 +134,8 @@
     width: 13vmin;
   }
   .cpu {
-    width: 11vmin;
+    min-width: 11vmin;
+    padding-left: 1.8vmin;
     color: var(--text);
     font-weight: 600;
   }

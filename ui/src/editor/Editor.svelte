@@ -14,6 +14,7 @@
   import Layout, { type Rect } from './Layout.svelte';
   import { LANGUAGES, language } from '../lib/i18n.svelte';
   import { t } from './strings';
+  import { templates, type Template } from './templates';
 
   type Asset = { name: string; kind: 'image' | 'font'; size: number };
 
@@ -460,11 +461,27 @@
     selectedId = null;
   }
 
-  function addPage() {
+  // The gallery of ready-made pages, open while a page is being added.
+  let choosing = $state(false);
+  const gallery = templates();
+
+  const miniKeys = (w: Template['widgets'][number]) => (w.config?.buttons ?? []) as DeckButton[];
+
+  /** Adds an empty page, or a copy of a ready-made one. */
+  function addPage(template?: Template) {
     const c = cfg!;
-    c.pages.push({ id: freeId('page'), name: t('Nová stránka'), widgets: [] });
+    const id = freeId(template?.id ?? 'page');
+    // Names of pages may repeat; ids may not, the agent finds buttons by them.
+    const short = (template?.name ?? t('Nová stránka')).split(' · ').pop()!;
+    c.pages.push({ id, name: short, widgets: [] });
+    const added = c.pages[c.pages.length - 1];
+    for (const w of template?.widgets ?? []) {
+      // The page was pushed first so that its own id is already taken.
+      added.widgets.push({ ...structuredClone(w), id: freeId(`${id}-${w.type}`) });
+    }
     pageIndex = c.pages.length - 1;
     selectedId = null;
+    choosing = false;
   }
 
   function removePage() {
@@ -652,8 +669,42 @@
                 }}>{pg.name}</button
               >
             {/each}
-            <button class="plus" onclick={addPage} title={t('Přidat stránku')}>+</button>
+            <button class="plus" class:on={choosing} onclick={() => (choosing = !choosing)} title={t('Přidat stránku')}>+</button>
           </div>
+          {#if choosing}
+            <fieldset class="gallery">
+              <h3>{t('Přidat stránku')}</h3>
+              <p class="hint first">{@html t('Hotová stránka je jen začátek: po přidání na ní můžeš změnit cokoli. Zkratky odpovídají výchozímu nastavení programů.')}</p>
+              <div class="cards">
+                <button class="card" onclick={() => addPage()}>
+                  <span class="mini empty"></span>
+                  <strong>{t('Prázdná stránka')}</strong>
+                  <small>{t('Poskládej si ji od začátku.')}</small>
+                </button>
+                {#each gallery as item (item.id)}
+                  <button class="card" onclick={() => addPage(item)}>
+                    <span class="mini">
+                      {#each item.widgets as w, i (i)}
+                        <i class={w.type} style="left:{(w.x / 12) * 100}%;top:{(w.y / 6) * 100}%;width:{(w.w / 12) * 100}%;height:{(w.h / 6) * 100}%">
+                          {#if w.type === 'deck'}
+                            <span class="grid" style="grid-template-columns:repeat({w.config?.cols ?? 3},1fr)">
+                              {#each miniKeys(w) as b, n (n)}
+                                <b style="background:{palette[b.color ?? ''] ?? '#636366'}"></b>
+                              {/each}
+                            </span>
+                          {:else}
+                            <span class="what">{widgetNames[w.type] ?? w.type}</span>
+                          {/if}
+                        </i>
+                      {/each}
+                    </span>
+                    <strong>{item.name}</strong>
+                    <small>{item.about}</small>
+                  </button>
+                {/each}
+              </div>
+            </fieldset>
+          {/if}
           <label class="row">
             <span>{t('Název stránky')}</span>
             <input class="wide" type="text" value={page.name} oninput={(e) => (page.name = str(e))} />
@@ -1192,10 +1243,8 @@
           {/if}
         {:else if tab === 'link'}
           <h2>{t('Připojení')}</h2>
-          <h3>{t('Kabelem')}</h3>
-          <p class="hint first">{@html t('Zapni na telefonu <code>Možnosti pro vývojáře → Ladění USB</code> a připoj ho. Dashboard se otevře sám, párovat není třeba.')}</p>
-
-          <h3>{t('Přes Wi-Fi')}</h3>
+          <h3>{t('Přes Wi-Fi')} <span class="badge">{t('Doporučeno')}</span></h3>
+          <p class="hint first">{@html t('Nejjednodušší cesta: na telefonu není potřeba nic nastavovat ani nic připojovat. Stačí, aby byl ve stejné síti jako počítač.')}</p>
           <label class="row">
             <span>{t('Povolit Wi-Fi')}</span>
             <input type="checkbox" checked={cfg.wireless === true} onchange={(e) => (cfg!.wireless = on(e))} />
@@ -1204,6 +1253,10 @@
             {#if pairing?.address && pairing.qr}
               <div class="qr">{@html pairing.qr}</div>
               <p class="hint center">{@html t('Naskenuj fotoaparátem telefonu. Telefon musí být ve stejné síti jako počítač.')}</p>
+              <label class="row">
+                <span>{t('Kód')}</span>
+                <input class="wide code big" style="margin-left:0" type="text" readonly value={pairing.code ?? ''} />
+              </label>
               <label class="row">
                 <span>{t('Adresa')}</span>
                 <input class="wide code" style="margin-left:0" type="text" readonly value={pairing.url ?? ''} />
@@ -1218,6 +1271,8 @@
               <p class="hint">{@html t('Připravuji kód…')}</p>
             {/if}
 
+            <p class="hint">{@html t('<strong>Android:</strong> naskenuj kód v aplikaci StreamPhone. <strong>iPhone:</strong> naskenuj ho fotoaparátem, dashboard se otevře v Safari. Přes <code>Sdílet → Přidat na plochu</code> z něj uděláš aplikaci přes celou obrazovku; ta se páruje zvlášť, opsáním kódu.')}</p>
+
             <h3>{t('Spárované telefony')}</h3>
             {#each paired as device (device.id)}
               <div class="row">
@@ -1231,6 +1286,9 @@
 
             <p class="hint">{@html t('Windows se při prvním zapnutí zeptá, jestli má StreamPhone povolit v síti: povol ho pro <strong>soukromé</strong> sítě. Bez spárování se k tlačítkům nikdo ze sítě nedostane. Spojení ale není šifrované, takže Wi-Fi používej jen v síti, které věříš (doma), ne na veřejné.')}</p>
           {/if}
+
+          <h3>{t('Kabelem')}</h3>
+          <p class="hint first">{@html t('Pro místa bez Wi-Fi. Zapni na telefonu <code>Možnosti pro vývojáře → Ladění USB</code> a připoj ho; na počítači musí být nástroj <code>adb</code>. Dashboard se otevře sám, párovat není třeba.')}</p>
         {:else if tab === 'night'}
           <h2>{t('Noční režim')}</h2>
           <label class="row">
@@ -1548,6 +1606,95 @@
   .chips .plus {
     background: none;
     border: 1px dashed rgba(255, 255, 255, 0.25);
+  }
+  .code.big {
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+  }
+  .badge {
+    margin-left: 6px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    background: rgba(48, 209, 88, 0.18);
+    color: #30d158;
+    font-size: 11px;
+    font-weight: 700;
+    vertical-align: 2px;
+  }
+  .gallery {
+    margin: 0 0 14px;
+  }
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+  }
+  .card {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    padding: 9px;
+    border-radius: 12px;
+    background: #1c1c1e;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  .card:hover {
+    border-color: #0a84ff;
+  }
+  .card strong {
+    margin-top: 8px;
+    font-size: 13px;
+  }
+  .card small {
+    margin-top: 2px;
+    color: #8e8e93;
+    font-size: 11.5px;
+    line-height: 1.35;
+  }
+  /* The page in small: the same 12 × 6 grid as the phone. */
+  .mini {
+    position: relative;
+    display: block;
+    width: 100%;
+    aspect-ratio: 2 / 1;
+    border-radius: 7px;
+    background: #000;
+    overflow: hidden;
+  }
+  .mini.empty {
+    border: 1px dashed rgba(255, 255, 255, 0.25);
+    background: none;
+  }
+  .mini i {
+    position: absolute;
+    padding: 2px;
+  }
+  .mini .what,
+  .mini .grid {
+    width: 100%;
+    height: 100%;
+    border-radius: 4px;
+    background: #2c2c2e;
+  }
+  .mini .what {
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    color: #c7c7cc;
+    font-size: 9px;
+    font-style: normal;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .mini .grid {
+    display: grid;
+    gap: 2px;
+    padding: 3px;
+  }
+  .mini .grid b {
+    border-radius: 2px;
+    opacity: 0.9;
   }
   fieldset h3:first-child {
     margin-top: 10px;

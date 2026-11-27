@@ -2,7 +2,7 @@
 <resources>
     <string name="searching">Hledám počítač…</string>
     <string name="not_found">Počítač nenalezen</string>
-    <string name="hint">Připoj telefon kabelem (se zapnutým laděním USB), nebo ho spáruj přes Wi-Fi: na počítači otevři StreamPhone → Připojení.</string>
+    <string name="hint">Spáruj telefon přes Wi-Fi: na počítači otevři StreamPhone → Připojení a naskenuj QR kód. Bez Wi-Fi připoj telefon kabelem (se zapnutým laděním USB).</string>
     <string name="scan">Naskenovat QR kód</string>
     <string name="type">Zadat adresu</string>
     <string name="retry">Zkusit znovu</string>

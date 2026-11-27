@@ -2,7 +2,7 @@
 <resources>
     <string name="searching">Suche den Computer…</string>
     <string name="not_found">Computer nicht gefunden</string>
-    <string name="hint">Schließe das Telefon per Kabel an (USB-Debugging aktiv) oder kopple es über WLAN: am Computer StreamPhone → Verbindung öffnen.</string>
+    <string name="hint">Kopple das Telefon über WLAN: Öffne am Computer StreamPhone → Verbindung und scanne den QR-Code. Ohne WLAN schließe das Telefon per Kabel an (USB-Debugging aktiviert).</string>
     <string name="scan">QR-Code scannen</string>
     <string name="type">Adresse eingeben</string>
     <string name="retry">Erneut versuchen</string>
