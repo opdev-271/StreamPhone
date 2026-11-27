@@ -4,7 +4,7 @@
 
 An old Android phone as a touch panel for your computer. It connects with a USB cable or over Wi-Fi. A desktop app with an editor runs on the computer; the phone runs the StreamPhone app, or just a browser.
 
-![A page of buttons](docs/stream-page.png)
+![A page of buttons](docs/stream-page-en.png)
 
 What it does:
 
@@ -17,7 +17,7 @@ What it does:
 - **Editor** on the PC: drag-and-drop layout with a live preview of the phone.
 - **Languages**: English, Czech, Slovak, German, Polish, Spanish and French.
 
-![Claude Code sessions with a permission request](docs/ai-page.png)
+![Claude Code sessions with a permission request](docs/ai-page-en.png)
 
 | Computer | Phone | Cable | Wi-Fi |
 |---|---|---|---|
@@ -38,7 +38,7 @@ For a cable connection the computer needs `adb` from the [Android platform-tools
 
 ### The Windows app
 
-![The Windows app](docs/windows-app.png)
+![The Windows app](docs/windows-app-en.png)
 
 - **The window** is the editor: layout, look, buttons, connection, all with a live preview of the phone.
 - **Closing the window** does not quit the app; the phone keeps working. Quit from the icon in the notification area.
@@ -47,7 +47,7 @@ For a cable connection the computer needs `adb` from the [Android platform-tools
 
 ### The Android app
 
-![The Android app](docs/android-app.png)
+![The Android app](docs/android-app-en.png)
 
 - **Full screen**, no browser bars, and the display stays on.
 - **Finds the computer by itself**: first over the cable, then at the Wi-Fi address it is paired with.
