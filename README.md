@@ -4,6 +4,8 @@
 
 An old Android phone as a touch panel for your computer. It connects with a USB cable or over Wi-Fi. A desktop app with an editor runs on the computer; the phone runs the StreamPhone app, or just a browser.
 
+> **1.4.0 is a beta.** The ready-made pages, the security themes (`cyber`, `redteam`, `blueteam`), pairing by typing the code and iPhone in the browser are new in it and still being tried out. The latest stable version is [1.2.1](https://github.com/opdev-271/StreamPhone/releases/tag/v1.2.1); the beta is on the [releases page](https://github.com/opdev-271/StreamPhone/releases) as a pre-release.
+
 ![A page of buttons](docs/stream-page-en.png)
 
 What it does:

@@ -4,6 +4,8 @@
 
 Starý Android telefon jako dotykový panel k počítači. Připojuje se USB kabelem nebo přes Wi-Fi. Na počítači běží aplikace s editorem, na telefonu aplikace StreamPhone nebo jen prohlížeč.
 
+> **Verze 1.4.0 je beta.** Hotové stránky, bezpečnostní vzhledy (`cyber`, `redteam`, `blueteam`), párování opsáním kódu a iPhone v prohlížeči jsou v ní nové a ještě se zkoušejí. Poslední stabilní verze je [1.2.1](https://github.com/opdev-271/StreamPhone/releases/tag/v1.2.1); betu najdeš mezi [vydáními](https://github.com/opdev-271/StreamPhone/releases) jako předběžné vydání.
+
 ![Stránka s tlačítky](docs/stream-page.png)
 
 Co umí:

@@ -2,7 +2,7 @@
 
 Versions follow [semantic versioning](https://semver.org/). Each version has a `vX.Y.Z` tag on GitHub; releases come with the Windows installer and the Android app.
 
-## 1.4.0 – 2026-11-27
+## 1.4.0 (beta) – 2026-11-27
 
 - **Ready-made pages.** The + next to the pages in the editor opens a gallery: video editing for Premiere Pro and DaVinci Resolve, After Effects, streaming, coding, Teams meetings, music, gaming and a computer overview, or an empty page. An added page is an ordinary page: every key and widget on it can be changed.
 - **Wi-Fi is the recommended connection.** The Connection tab, the Android app and the README lead with it; the cable stays for places without Wi-Fi.
